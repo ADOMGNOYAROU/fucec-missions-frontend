@@ -1,0 +1,497 @@
+@import '../../../styles/variables';
+
+.dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// ========================================
+// WELCOME SECTION
+// ========================================
+.welcome-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xl;
+  padding: $spacing-xl;
+  background: linear-gradient(135deg, $fucec-red 0%, $fucec-red-light 100%);
+  border-radius: $radius-2xl;
+  color: $white;
+  box-shadow: $shadow-red;
+
+  .welcome-content {
+    h1 {
+      font-size: $font-size-3xl;
+      font-weight: $font-weight-bold;
+      margin: 0 0 $spacing-sm 0;
+      color: $white;
+    }
+
+    p {
+      font-size: $font-size-lg;
+      margin: 0;
+      opacity: 0.9;
+    }
+  }
+
+  .btn-primary {
+    background: $white;
+    color: $fucec-red;
+    padding: $spacing-md $spacing-xl;
+    border-radius: $radius-lg;
+    font-weight: $font-weight-semibold;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    box-shadow: 0 4px 12px rgba($white, 0.3);
+    transition: all $transition-base;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba($white, 0.4);
+    }
+  }
+}
+
+// ========================================
+// STATS GRID
+// ========================================
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: $spacing-lg;
+  margin-bottom: $spacing-xl;
+}
+
+.stat-card {
+  background: $white;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+  box-shadow: $shadow-sm;
+  transition: all $transition-base;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-md;
+  }
+
+  .stat-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: $radius-lg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &.missions {
+      background: linear-gradient(135deg, rgba($fucec-teal, 0.1) 0%, rgba($fucec-teal, 0.05) 100%);
+      color: $fucec-teal;
+    }
+
+    &.progress {
+      background: linear-gradient(135deg, rgba($warning, 0.1) 0%, rgba($warning, 0.05) 100%);
+      color: $warning;
+    }
+
+    &.pending {
+      background: linear-gradient(135deg, rgba($fucec-red, 0.1) 0%, rgba($fucec-red, 0.05) 100%);
+      color: $fucec-red;
+    }
+
+    &.budget {
+      background: linear-gradient(135deg, rgba($success, 0.1) 0%, rgba($success, 0.05) 100%);
+      color: $success;
+    }
+
+    svg {
+      stroke-width: 2;
+    }
+  }
+
+  .stat-content {
+    flex: 1;
+
+    .stat-value {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      color: $text-primary;
+      margin-bottom: $spacing-xs;
+    }
+
+    .stat-label {
+      font-size: $font-size-sm;
+      color: $text-secondary;
+      font-weight: $font-weight-medium;
+    }
+  }
+}
+
+// ========================================
+// DASHBOARD GRID
+// ========================================
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: $spacing-xl;
+  margin-bottom: $spacing-xl;
+}
+
+.dashboard-card {
+  background: $white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-lg $spacing-xl;
+    border-bottom: 1px solid $border-color;
+
+    h2 {
+      font-size: $font-size-xl;
+      font-weight: $font-weight-semibold;
+      margin: 0;
+      color: $text-primary;
+    }
+
+    .link {
+      color: $fucec-teal;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      transition: color $transition-fast;
+
+      &:hover {
+        color: $fucec-teal-dark;
+      }
+    }
+  }
+
+  .card-body {
+    padding: $spacing-lg;
+  }
+}
+
+// ========================================
+// MISSION LIST
+// ========================================
+.mission-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.mission-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg;
+  background: $bg-light;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: all $transition-fast;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: $white;
+    border-color: $fucec-teal;
+    box-shadow: $shadow-sm;
+  }
+
+  .mission-info {
+    flex: 1;
+    min-width: 0;
+
+    .mission-title {
+      font-weight: $font-weight-semibold;
+      color: $text-primary;
+      margin-bottom: $spacing-xs;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mission-meta {
+      display: flex;
+      gap: $spacing-lg;
+      font-size: $font-size-sm;
+      color: $text-secondary;
+
+      span {
+        display: flex;
+        align-items: center;
+        gap: $spacing-xs;
+
+        svg {
+          stroke-width: 2;
+          flex-shrink: 0;
+        }
+      }
+    }
+  }
+
+  .status-badge {
+    padding: 0.375rem 0.875rem;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    white-space: nowrap;
+
+    &[data-status="BROUILLON"] {
+      background: lighten($text-secondary, 40%);
+      color: $text-secondary;
+    }
+
+    &[data-status="EN_ATTENTE"] {
+      background: $warning-light;
+      color: darken($warning, 20%);
+    }
+
+    &[data-status="VALIDEE"] {
+      background: $info-light;
+      color: darken($info, 20%);
+    }
+
+    &[data-status="IN_PROGRESS"] {
+      background: lighten($fucec-teal, 45%);
+      color: $fucec-teal-dark;
+    }
+
+    &[data-status="CLOTUREE"] {
+      background: $success-light;
+      color: darken($success, 20%);
+    }
+
+    &[data-status="REJETEE"] {
+      background: $danger-light;
+      color: darken($danger, 10%);
+    }
+  }
+}
+
+// ========================================
+// VALIDATION LIST
+// ========================================
+.validation-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.validation-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg;
+  background: $bg-light;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: all $transition-fast;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: $white;
+    border-color: $fucec-teal;
+    box-shadow: $shadow-sm;
+  }
+
+  .validation-info {
+    flex: 1;
+    min-width: 0;
+
+    .validation-title {
+      font-weight: $font-weight-semibold;
+      color: $text-primary;
+      margin-bottom: $spacing-xs;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .validation-meta {
+      display: flex;
+      gap: $spacing-lg;
+      font-size: $font-size-sm;
+      color: $text-secondary;
+
+      .validation-level {
+        padding: 0.25rem 0.625rem;
+        background: lighten($fucec-teal, 45%);
+        color: $fucec-teal-dark;
+        border-radius: $radius-sm;
+        font-weight: $font-weight-medium;
+        font-size: $font-size-xs;
+
+        &.urgent {
+          background: $danger-light;
+          color: darken($danger, 10%);
+        }
+      }
+    }
+  }
+
+  .validation-actions {
+    display: flex;
+    gap: $spacing-sm;
+
+    .btn-icon {
+      width: 2rem;
+      height: 2rem;
+      border-radius: $radius-md;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      transition: all $transition-fast;
+
+      &.success {
+        background: $success-light;
+        color: $success;
+
+        &:hover {
+          background: $success;
+          color: $white;
+        }
+      }
+
+      &.danger {
+        background: $danger-light;
+        color: $danger;
+
+        &:hover {
+          background: $danger;
+          color: $white;
+        }
+      }
+
+      svg {
+        stroke-width: 2.5;
+      }
+    }
+  }
+}
+
+// ========================================
+// EMPTY STATE
+// ========================================
+.empty-state {
+  text-align: center;
+  padding: $spacing-3xl $spacing-lg;
+  color: $text-muted;
+
+  svg {
+    stroke-width: 1.5;
+    margin-bottom: $spacing-lg;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    font-size: $font-size-base;
+  }
+}
+
+// ========================================
+// QUICK ACTIONS
+// ========================================
+.quick-actions {
+  margin-top: $spacing-xl;
+
+  h2 {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-semibold;
+    margin-bottom: $spacing-lg;
+    color: $text-primary;
+  }
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: $spacing-lg;
+}
+
+.action-card {
+  background: $white;
+  border: 2px dashed $border-color;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-md;
+  cursor: pointer;
+  transition: all $transition-base;
+  position: relative;
+
+  svg {
+    color: $fucec-teal;
+    stroke-width: 2;
+  }
+
+  span {
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+    text-align: center;
+  }
+
+  .badge {
+    position: absolute;
+    top: $spacing-md;
+    right: $spacing-md;
+    background: $fucec-red;
+    color: $white;
+    padding: 0.25rem 0.625rem;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, rgba($fucec-teal, 0.05) 0%, rgba($fucec-teal, 0.02) 100%);
+    border-color: $fucec-teal;
+    transform: translateY(-4px);
+    box-shadow: $shadow-md;
+  }
+}
+
+// ========================================
+// RESPONSIVE
+// ========================================
+@media (max-width: $breakpoint-lg) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .welcome-section {
+    flex-direction: column;
+    text-align: center;
+    gap: $spacing-lg;
+
+    .welcome-content h1 {
+      font-size: $font-size-2xl;
+    }
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+}

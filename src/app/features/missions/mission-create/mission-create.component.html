@@ -1,0 +1,323 @@
+<div class="mission-create-container">
+  <div class="form-header">
+    <div class="header-content">
+      <button class="btn-back" routerLink="/missions">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Retour
+      </button>
+      <div class="header-title">
+        <h1>Nouvelle Demande d'Ordre de Mission</h1>
+        <p>Remplissez tous les champs requis pour créer votre demande</p>
+      </div>
+    </div>
+  </div>
+
+  <form [formGroup]="missionForm" (ngSubmit)="onSubmit()">
+    <!-- Section 1: Informations Générales -->
+    <div class="form-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </div>
+        <h2>Informations Générales</h2>
+      </div>
+
+      <div class="form-grid">
+        <!-- Titre -->
+        <div class="form-group full-width">
+          <label for="titre" class="required">Objet de la mission</label>
+          <input
+            type="text"
+            id="titre"
+            formControlName="titre"
+            placeholder="Ex: Mission de formation des collaborateurs"
+            class="form-control"
+          />
+          <div class="error-message" *ngIf="missionForm.get('titre')?.invalid && missionForm.get('titre')?.touched">
+            L'objet de la mission est requis
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group full-width">
+          <label for="description" class="required">Description détaillée</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="4"
+            placeholder="Décrivez en détail le but et le contenu de la mission..."
+            class="form-control"
+          ></textarea>
+          <div class="error-message" *ngIf="missionForm.get('description')?.invalid && missionForm.get('description')?.touched">
+            La description est requise
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Dates et Lieu -->
+    <div class="form-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <h2>Dates et Lieu</h2>
+      </div>
+
+      <div class="form-grid">
+        <!-- Date de départ -->
+        <div class="form-group">
+          <label for="dateDebut" class="required">Date de départ</label>
+          <input
+            type="date"
+            id="dateDebut"
+            formControlName="dateDebut"
+            class="form-control"
+          />
+          <div class="error-message" *ngIf="missionForm.get('dateDebut')?.invalid && missionForm.get('dateDebut')?.touched">
+            La date de départ est requise
+          </div>
+        </div>
+
+        <!-- Date de retour -->
+        <div class="form-group">
+          <label for="dateFin" class="required">Date de retour</label>
+          <input
+            type="date"
+            id="dateFin"
+            formControlName="dateFin"
+            class="form-control"
+          />
+          <div class="error-message" *ngIf="missionForm.get('dateFin')?.invalid && missionForm.get('dateFin')?.touched">
+            La date de retour est requise
+          </div>
+          <div class="error-message" *ngIf="missionForm.hasError('dateInvalid')">
+            La date de retour doit être après la date de départ
+          </div>
+        </div>
+
+        <!-- Durée calculée -->
+        <div class="form-group full-width">
+          <div class="info-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Durée: <strong>{{ calculerDuree() }} jour(s)</strong></span>
+          </div>
+        </div>
+
+        <!-- Lieu de la mission -->
+        <div class="form-group full-width">
+          <label for="lieuMission" class="required">Lieu d'exécution</label>
+          <input
+            type="text"
+            id="lieuMission"
+            formControlName="lieuMission"
+            placeholder="Ex: Kpalimé"
+            class="form-control"
+          />
+          <div class="error-message" *ngIf="missionForm.get('lieuMission')?.invalid && missionForm.get('lieuMission')?.touched">
+            Le lieu de la mission est requis
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Participants -->
+    <div class="form-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <h2>Intervenants</h2>
+      </div>
+
+      <div class="participants-list">
+        <!-- Agent créateur (automatique) -->
+        <div class="participant-item creator">
+          <div class="participant-avatar">
+            {{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}
+          </div>
+          <div class="participant-info">
+            <div class="participant-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</div>
+            <div class="participant-role">{{ getRoleLabel(currentUser?.role) }} - Créateur</div>
+          </div>
+          <span class="badge-creator">Vous</span>
+        </div>
+
+        <!-- Participants ajoutés -->
+        <div class="participant-item" *ngFor="let participant of selectedParticipants; let i = index">
+          <div class="participant-avatar">
+            {{ participant.prenom?.charAt(0) }}{{ participant.nom?.charAt(0) }}
+          </div>
+          <div class="participant-info">
+            <div class="participant-name">{{ participant.prenom }} {{ participant.nom }}</div>
+            <div class="participant-role">{{ getRoleLabel(participant.role) }}</div>
+          </div>
+          <button type="button" class="btn-remove" (click)="removeParticipant(i)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Bouton ajouter participant -->
+        <button type="button" class="btn-add-participant" (click)="openParticipantModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Ajouter un intervenant
+        </button>
+      </div>
+    </div>
+
+    <!-- Section 4: Transport -->
+    <div class="form-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="1" y="3" width="15" height="13"></rect>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+          </svg>
+        </div>
+        <h2>Moyen de Déplacement</h2>
+      </div>
+
+      <div class="form-grid">
+        <!-- Véhicule -->
+        <div class="form-group">
+          <label for="vehicule">Véhicule</label>
+          <select id="vehicule" formControlName="vehiculeId" class="form-control">
+            <option value="">Sélectionnez un véhicule</option>
+            <option *ngFor="let vehicule of vehicules" [value]="vehicule.id">
+              {{ vehicule.immatriculation }} - {{ vehicule.marque }} {{ vehicule.modele }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Chauffeur -->
+        <div class="form-group">
+          <label for="chauffeur">Chauffeur</label>
+          <select id="chauffeur" formControlName="chauffeurId" class="form-control">
+            <option value="">Sélectionnez un chauffeur</option>
+            <option *ngFor="let chauffeur of chauffeurs" [value]="chauffeur.id">
+              {{ chauffeur.prenom }} {{ chauffeur.nom }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5: Budget -->
+    <div class="form-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <h2>Budget Estimé</h2>
+      </div>
+
+      <div class="form-grid">
+        <!-- Budget estimé -->
+        <div class="form-group">
+          <label for="budgetEstime" class="required">Budget estimé (FCFA)</label>
+          <input
+            type="number"
+            id="budgetEstime"
+            formControlName="budgetEstime"
+            placeholder="0"
+            class="form-control"
+            min="0"
+          />
+          <div class="error-message" *ngIf="missionForm.get('budgetEstime')?.invalid && missionForm.get('budgetEstime')?.touched">
+            Le budget estimé est requis
+          </div>
+        </div>
+
+        <!-- Avance demandée -->
+        <div class="form-group">
+          <label for="avanceDemandee" class="required">Avance demandée (FCFA)</label>
+          <input
+            type="number"
+            id="avanceDemandee"
+            formControlName="avanceDemandee"
+            placeholder="0"
+            class="form-control"
+            min="0"
+          />
+          <div class="error-message" *ngIf="missionForm.get('avanceDemandee')?.invalid && missionForm.get('avanceDemandee')?.touched">
+            L'avance demandée est requise
+          </div>
+          <div class="error-message" *ngIf="missionForm.hasError('avanceSuperieureBudget')">
+            L'avance ne peut pas dépasser le budget estimé
+          </div>
+        </div>
+      </div>
+
+      <!-- Calcul automatique -->
+      <div class="budget-summary" *ngIf="missionForm.get('budgetEstime')?.value > 0">
+        <div class="summary-item">
+          <span>Budget estimé:</span>
+          <strong>{{ missionForm.get('budgetEstime')?.value | number:'1.0-0' }} FCFA</strong>
+        </div>
+        <div class="summary-item">
+          <span>Avance demandée:</span>
+          <strong>{{ missionForm.get('avanceDemandee')?.value | number:'1.0-0' }} FCFA</strong>
+        </div>
+        <div class="summary-item highlight">
+          <span>Pourcentage d'avance:</span>
+          <strong>{{ calculerPourcentageAvance() }}%</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="saveDraft()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        Enregistrer le brouillon
+      </button>
+
+      <button type="submit" class="btn-primary" [disabled]="missionForm.invalid || submitting">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" *ngIf="!submitting">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        <svg *ngIf="submitting" class="spinner" width="18" height="18" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"></circle>
+          <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ submitting ? 'Envoi en cours...' : 'Soumettre la demande' }}
+      </button>
+    </div>
+  </form>
+</div>

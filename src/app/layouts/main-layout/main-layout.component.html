@@ -1,0 +1,181 @@
+<div class="main-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+    <!-- Logo -->
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">F</div>
+        <div class="logo-text" *ngIf="!sidebarCollapsed">
+          <h3>FUCEC</h3>
+          <span>Missions</span>
+        </div>
+      </div>
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <ul class="nav-list">
+        <!-- Dashboard -->
+        <li class="nav-item">
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span class="nav-text" *ngIf="!sidebarCollapsed">Tableau de bord</span>
+          </a>
+        </li>
+
+        <!-- Missions -->
+        <li class="nav-item">
+          <a routerLink="/missions" routerLinkActive="active" class="nav-link">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span class="nav-text" *ngIf="!sidebarCollapsed">Mes Missions</span>
+          </a>
+        </li>
+
+        <!-- Validations (pour validateurs uniquement) -->
+        <li class="nav-item" *ngIf="canValidate()">
+          <a routerLink="/validations" routerLinkActive="active" class="nav-link">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline points="9 11 12 14 22 4"></polyline>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            <span class="nav-text" *ngIf="!sidebarCollapsed">Validations</span>
+            <span class="badge" *ngIf="pendingValidations > 0 && !sidebarCollapsed">{{ pendingValidations }}</span>
+          </a>
+        </li>
+
+        <!-- Finance (pour comptabilité, RH, DG) -->
+        <li class="nav-item" *ngIf="canAccessFinance()">
+          <a routerLink="/finance" routerLinkActive="active" class="nav-link">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <span class="nav-text" *ngIf="!sidebarCollapsed">Finance</span>
+          </a>
+        </li>
+
+        <!-- Justificatifs -->
+        <li class="nav-item">
+          <a routerLink="/justificatifs" routerLinkActive="active" class="nav-link">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+              <polyline points="13 2 13 9 20 9"></polyline>
+            </svg>
+            <span class="nav-text" *ngIf="!sidebarCollapsed">Justificatifs</span>
+          </a>
+        </li>
+
+        <li class="nav-divider" *ngIf="!sidebarCollapsed"></li>
+
+        <!-- Administration (admin seulement) -->
+        <li class="nav-item" *ngIf="isAdmin()">
+          <a routerLink="/admin" routerLinkActive="active" class="nav-link">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6m7.071-13.071l-4.243 4.243m0 2.828l-4.242 4.243M23 12h-6m-6 0H1m18.071 7.071l-4.243-4.243m-2.828 0l-4.242 4.243"></path>
+            </svg>
+            <span class="nav-text" *ngIf="!sidebarCollapsed">Administration</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- User Profile -->
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-avatar">
+          {{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}
+        </div>
+        <div class="user-info" *ngIf="!sidebarCollapsed">
+          <div class="user-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</div>
+          <div class="user-role">{{ getRoleLabel(currentUser?.role) }}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h1 class="page-title">{{ pageTitle }}</h1>
+      </div>
+
+      <div class="header-right">
+        <!-- Notifications -->
+        <div class="notifications" [class.has-unread]="unreadNotifications > 0">
+          <button class="icon-btn" (click)="toggleNotifications()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="badge-dot" *ngIf="unreadNotifications > 0">{{ unreadNotifications }}</span>
+          </button>
+        </div>
+
+        <!-- User Menu -->
+        <div class="user-menu">
+          <button class="user-btn" (click)="toggleUserMenu()">
+            <div class="user-avatar-sm">
+              {{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div class="dropdown-menu" *ngIf="userMenuOpen">
+            <a routerLink="/profil" class="dropdown-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              Mon Profil
+            </a>
+            <a routerLink="/parametres" class="dropdown-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v6m0 6v6m7.071-13.071l-4.243 4.243m0 2.828l-4.242 4.243M23 12h-6m-6 0H1m18.071 7.071l-4.243-4.243m-2.828 0l-4.242 4.243"></path>
+              </svg>
+              Paramètres
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item danger" (click)="logout()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,288 @@
+/* You can add global styles to this file, and also import other style files */
+// Importer les variables
+@import './styles/variables';
+
+// Reset CSS
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// Body
+body {
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  line-height: $line-height-normal;
+  color: $text-primary;
+  background-color: $bg-light;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Headings
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family-heading;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-tight;
+  color: $text-primary;
+  margin: 0;
+}
+
+h1 { font-size: $font-size-4xl; }
+h2 { font-size: $font-size-3xl; }
+h3 { font-size: $font-size-2xl; }
+h4 { font-size: $font-size-xl; }
+h5 { font-size: $font-size-lg; }
+h6 { font-size: $font-size-base; }
+
+// Links
+a {
+  color: $fucec-teal;
+  text-decoration: none;
+  transition: color $transition-base;
+
+  &:hover {
+    color: $fucec-teal-dark;
+  }
+}
+
+// Buttons base styles
+button {
+  font-family: $font-family-base;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all $transition-base;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Inputs base styles
+input, textarea, select {
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  
+  &:focus {
+    outline: none;
+  }
+}
+
+// Scrollbar personnalisée
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-gray;
+  border-radius: $radius-full;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $border-color-dark;
+  border-radius: $radius-full;
+  
+  &:hover {
+    background: $text-secondary;
+  }
+}
+
+// Classes utilitaires
+
+// Texte
+.text-primary { color: $text-primary !important; }
+.text-secondary { color: $text-secondary !important; }
+.text-muted { color: $text-muted !important; }
+.text-white { color: $text-white !important; }
+.text-red { color: $fucec-red !important; }
+.text-teal { color: $fucec-teal !important; }
+.text-success { color: $success !important; }
+.text-warning { color: $warning !important; }
+.text-danger { color: $danger !important; }
+
+// Taille de texte
+.text-xs { font-size: $font-size-xs !important; }
+.text-sm { font-size: $font-size-sm !important; }
+.text-base { font-size: $font-size-base !important; }
+.text-lg { font-size: $font-size-lg !important; }
+.text-xl { font-size: $font-size-xl !important; }
+.text-2xl { font-size: $font-size-2xl !important; }
+
+// Poids de texte
+.font-light { font-weight: $font-weight-light !important; }
+.font-normal { font-weight: $font-weight-normal !important; }
+.font-medium { font-weight: $font-weight-medium !important; }
+.font-semibold { font-weight: $font-weight-semibold !important; }
+.font-bold { font-weight: $font-weight-bold !important; }
+
+// Alignement
+.text-left { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+
+// Background
+.bg-white { background-color: $bg-white !important; }
+.bg-light { background-color: $bg-light !important; }
+.bg-gray { background-color: $bg-gray !important; }
+.bg-red { background-color: $fucec-red !important; }
+.bg-teal { background-color: $fucec-teal !important; }
+
+// Marges
+.m-0 { margin: 0 !important; }
+.m-1 { margin: $spacing-xs !important; }
+.m-2 { margin: $spacing-sm !important; }
+.m-3 { margin: $spacing-md !important; }
+.m-4 { margin: $spacing-lg !important; }
+.m-5 { margin: $spacing-xl !important; }
+
+.mt-0 { margin-top: 0 !important; }
+.mt-1 { margin-top: $spacing-xs !important; }
+.mt-2 { margin-top: $spacing-sm !important; }
+.mt-3 { margin-top: $spacing-md !important; }
+.mt-4 { margin-top: $spacing-lg !important; }
+.mt-5 { margin-top: $spacing-xl !important; }
+
+.mb-0 { margin-bottom: 0 !important; }
+.mb-1 { margin-bottom: $spacing-xs !important; }
+.mb-2 { margin-bottom: $spacing-sm !important; }
+.mb-3 { margin-bottom: $spacing-md !important; }
+.mb-4 { margin-bottom: $spacing-lg !important; }
+.mb-5 { margin-bottom: $spacing-xl !important; }
+
+// Padding
+.p-0 { padding: 0 !important; }
+.p-1 { padding: $spacing-xs !important; }
+.p-2 { padding: $spacing-sm !important; }
+.p-3 { padding: $spacing-md !important; }
+.p-4 { padding: $spacing-lg !important; }
+.p-5 { padding: $spacing-xl !important; }
+
+// Flexbox
+.d-flex { display: flex !important; }
+.flex-column { flex-direction: column !important; }
+.flex-row { flex-direction: row !important; }
+.justify-start { justify-content: flex-start !important; }
+.justify-center { justify-content: center !important; }
+.justify-end { justify-content: flex-end !important; }
+.justify-between { justify-content: space-between !important; }
+.align-start { align-items: flex-start !important; }
+.align-center { align-items: center !important; }
+.align-end { align-items: flex-end !important; }
+.gap-1 { gap: $spacing-xs !important; }
+.gap-2 { gap: $spacing-sm !important; }
+.gap-3 { gap: $spacing-md !important; }
+.gap-4 { gap: $spacing-lg !important; }
+
+// Ombres
+.shadow-sm { box-shadow: $shadow-sm !important; }
+.shadow-md { box-shadow: $shadow-md !important; }
+.shadow-lg { box-shadow: $shadow-lg !important; }
+.shadow-xl { box-shadow: $shadow-xl !important; }
+
+// Border radius
+.rounded-sm { border-radius: $radius-sm !important; }
+.rounded-md { border-radius: $radius-md !important; }
+.rounded-lg { border-radius: $radius-lg !important; }
+.rounded-xl { border-radius: $radius-xl !important; }
+.rounded-2xl { border-radius: $radius-2xl !important; }
+.rounded-full { border-radius: $radius-full !important; }
+
+// Autres
+.w-full { width: 100% !important; }
+.h-full { height: 100% !important; }
+.cursor-pointer { cursor: pointer !important; }
+
+// Cards communes
+.card {
+  background: $bg-white;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-sm;
+  transition: all $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+
+  &-header {
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-md;
+    border-bottom: 1px solid $border-color;
+  }
+
+  &-body {
+    padding: $spacing-sm 0;
+  }
+
+  &-footer {
+    margin-top: $spacing-md;
+    padding-top: $spacing-md;
+    border-top: 1px solid $border-color;
+  }
+}
+
+// Boutons FUCEC
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: $radius-lg;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-base;
+  transition: all $transition-base;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &-primary {
+    background: linear-gradient(135deg, $fucec-teal 0%, $fucec-teal-dark 100%);
+    color: $text-white;
+    box-shadow: $shadow-teal;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba($fucec-teal, 0.4);
+    }
+  }
+
+  &-danger {
+    background: linear-gradient(135deg, $fucec-red 0%, $fucec-red-dark 100%);
+    color: $text-white;
+    box-shadow: $shadow-red;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba($fucec-red, 0.4);
+    }
+  }
+
+  &-secondary {
+    background: $bg-gray;
+    color: $text-primary;
+
+    &:hover:not(:disabled) {
+      background: darken($bg-gray, 5%);
+    }
+  }
+
+  &-outline {
+    background: transparent;
+    border: 2px solid $fucec-teal;
+    color: $fucec-teal;
+
+    &:hover:not(:disabled) {
+      background: $fucec-teal;
+      color: $text-white;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

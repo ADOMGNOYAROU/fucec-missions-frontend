@@ -1,0 +1,123 @@
+// ========================================
+// VARIABLES GLOBALES FUCEC-TOGO
+// ========================================
+
+// Couleurs principales FUCEC
+$fucec-red: #E63946;
+$fucec-red-dark: #C72C38;
+$fucec-red-light: #FF6B6B;
+$fucec-pink: #FFE5E5;
+$fucec-pink-light: #FFF5F5;
+
+$fucec-teal: #00B4B4;
+$fucec-teal-dark: #008B8B;
+$fucec-teal-light: #00D4D4;
+
+// Couleurs de texte
+$text-primary: #2C3E50;
+$text-secondary: #6C757D;
+$text-muted: #95A5A6;
+$text-white: #FFFFFF;
+
+// Couleurs de fond
+$bg-white: #FFFFFF;
+$bg-light: #F8F9FA;
+$bg-gray: #E9ECEF;
+$bg-dark: #2C3E50;
+
+// Couleurs de statut
+$success: #28A745;
+$success-light: #D4EDDA;
+$warning: #FFC107;
+$warning-light: #FFF3CD;
+$danger: #DC3545;
+$danger-light: #F8D7DA;
+$info: #17A2B8;
+$info-light: #D1ECF1;
+
+// Couleurs de bordure
+$border-color: #DEE2E6;
+$border-color-light: #E9ECEF;
+$border-color-dark: #ADB5BD;
+
+// Ombres
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+$shadow-xl: 0 12px 36px rgba(0, 0, 0, 0.25);
+$shadow-red: 0 8px 20px rgba($fucec-red, 0.3);
+$shadow-teal: 0 8px 20px rgba($fucec-teal, 0.3);
+
+// Rayons de bordure
+$radius-sm: 0.375rem;   // 6px
+$radius-md: 0.5rem;     // 8px
+$radius-lg: 0.75rem;    // 12px
+$radius-xl: 1rem;       // 16px
+$radius-2xl: 1.5rem;    // 24px
+$radius-full: 9999px;   // Circulaire
+
+// Espacements
+$spacing-xs: 0.25rem;   // 4px
+$spacing-sm: 0.5rem;    // 8px
+$spacing-md: 1rem;      // 16px
+$spacing-lg: 1.5rem;    // 24px
+$spacing-xl: 2rem;      // 32px
+$spacing-2xl: 3rem;     // 48px
+$spacing-3xl: 4rem;     // 64px
+
+// Typographie
+$font-family-base: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+$font-family-heading: 'Poppins', 'Inter', sans-serif;
+$font-family-mono: 'Fira Code', 'Courier New', monospace;
+
+$font-size-xs: 0.75rem;   // 12px
+$font-size-sm: 0.875rem;  // 14px
+$font-size-base: 1rem;    // 16px
+$font-size-lg: 1.125rem;  // 18px
+$font-size-xl: 1.25rem;   // 20px
+$font-size-2xl: 1.5rem;   // 24px
+$font-size-3xl: 1.875rem; // 30px
+$font-size-4xl: 2.25rem;  // 36px
+
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-extrabold: 800;
+
+$line-height-tight: 1.25;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.75;
+
+// Transitions
+$transition-fast: 150ms ease;
+$transition-base: 250ms ease;
+$transition-slow: 350ms ease;
+
+// Breakpoints (Responsive)
+$breakpoint-xs: 480px;
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// Z-index
+$z-dropdown: 1000;
+$z-sticky: 1020;
+$z-fixed: 1030;
+$z-modal-backdrop: 1040;
+$z-modal: 1050;
+$z-popover: 1060;
+$z-tooltip: 1070;
+
+// Sidebar
+$sidebar-width: 280px;
+$sidebar-collapsed-width: 80px;
+
+// Header
+$header-height: 70px;
+
+// Container
+$container-max-width: 1440px;

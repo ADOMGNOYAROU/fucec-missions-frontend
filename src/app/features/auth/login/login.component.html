@@ -1,0 +1,122 @@
+<div class="login-container">
+  <!-- Gradient Background -->
+  <div class="gradient-bg"></div>
+  
+  <!-- Pattern Overlay -->
+  <div class="pattern-overlay">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+  </div>
+
+  <!-- Login Content -->
+  <div class="login-content">
+    <!-- Logo FUCEC -->
+    <div class="logo-container">
+      <div class="logo-card">
+        <div class="logo-icon">
+          <span>F</span>
+        </div>
+        <div class="logo-text">
+          <h1>FUCEC-TOGO</h1>
+          <p>INSTITUTION FAÎTIÈRE</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="form-card">
+      <div class="form-header">
+        <h2>Connectez-vous pour revenir !</h2>
+        <p>Renseignez-vous pour continuer</p>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="errorMessage">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- Login Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <!-- Identifiant -->
+        <div class="form-group">
+          <label for="identifiant">Identifiant</label>
+          <input
+            type="text"
+            id="identifiant"
+            formControlName="identifiant"
+            placeholder="Entrez votre identifiant"
+            class="form-control"
+            [class.invalid]="loginForm.get('identifiant')?.invalid && loginForm.get('identifiant')?.touched"
+          />
+          <div class="error-text" *ngIf="loginForm.get('identifiant')?.hasError('required') && loginForm.get('identifiant')?.touched">
+            L'identifiant est requis
+          </div>
+        </div>
+
+        <!-- Mot de passe -->
+        <div class="form-group">
+          <label for="motDePasse">Mot de passe</label>
+          <div class="password-input">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              id="motDePasse"
+              formControlName="motDePasse"
+              placeholder="Entrez votre mot de passe"
+              class="form-control"
+              [class.invalid]="loginForm.get('motDePasse')?.invalid && loginForm.get('motDePasse')?.touched"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="togglePassword()"
+              tabindex="-1"
+            >
+              <svg *ngIf="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg *ngIf="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="error-text" *ngIf="loginForm.get('motDePasse')?.hasError('required') && loginForm.get('motDePasse')?.touched">
+            Le mot de passe est requis
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-submit" [disabled]="loading || loginForm.invalid">
+          <span *ngIf="!loading">SE CONNECTER</span>
+          <span *ngIf="loading" class="loading-spinner">
+            <svg class="spinner" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"></circle>
+              <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Connexion...
+          </span>
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="form-footer">
+        <a href="/auth/forgot-password" class="forgot-password">
+          Mot de passe oublié ?
+        </a>
+      </div>
+    </div>
+
+    <!-- Version Info -->
+    <div class="version-info">
+      <p>© 2025 FUCEC-TOGO - Tous droits réservés</p>
+      <p class="version">Version 1.0.0</p>
+    </div>
+  </div>
+</div>
