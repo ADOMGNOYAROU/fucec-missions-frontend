@@ -51,6 +51,12 @@ export const validateurGuard: CanActivateFn = roleGuard([
   'DG'
 ]);
 
+// Guard commun pour Chef d'Agence et Directeur de Service
+export const chefResponsableGuard: CanActivateFn = roleGuard([
+  'CHEF_AGENCE',
+  'RESPONSABLE_COPEC'
+]);
+
 export const financeGuard: CanActivateFn = roleGuard([
   'COMPTABLE',
   'DIRECTEUR_FINANCES',

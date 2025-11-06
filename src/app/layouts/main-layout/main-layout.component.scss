@@ -69,11 +69,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: $white;
-      font-size: 1.25rem;
-      font-weight: $font-weight-bold;
-      box-shadow: $shadow-red;
       flex-shrink: 0;
+
+      .logo-image {
+        width: 5rem; // Increased from 3rem for better visibility
+        height: 5rem; // Increased from 3rem for better visibility
+        // border-radius: 50%; // Removed for square shape
+        object-fit: contain; // Shows full image without cropping
+        // filter: brightness(0) invert(1); // Commenté pour garder les couleurs originales
+      }
     }
 
     .logo-text {
@@ -452,6 +456,16 @@
 
   .page-content {
     padding: $spacing-md;
+  }
+
+  // Backdrop displayed when sidebar is open on mobile
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35); // slate-900 at 35%
+    backdrop-filter: blur(1px);
+    z-index: $z-modal - 1;
+    animation: fadeIn 0.2s ease-out;
   }
 }
 

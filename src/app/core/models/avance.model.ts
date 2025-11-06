@@ -1,6 +1,8 @@
 // ========================================
 // src/app/core/models/avance.model.ts
 // ========================================
+import { Mission } from './mission.model';
+import { User } from './user.model';
 
 export interface Avance {
   id: string;

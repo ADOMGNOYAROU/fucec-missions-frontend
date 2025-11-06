@@ -1,0 +1,85 @@
+<app-card>
+  <app-card-header>
+    <h2>Intervenants</h2>
+  </app-card-header>
+  <app-card-body>
+    <div class="list" *ngIf="intervenants?.length; else empty">
+      <div class="item" *ngFor="let u of intervenants">
+        <div class="left">
+          <div class="avatar">{{ getInitials(u) }}</div>
+          <div class="meta">
+            <div class="name">{{ u.prenom }} {{ u.nom }}</div>
+            <div class="role" *ngIf="editingRoleUserId !== u.id; else roleEditor">
+              {{ u.role }}
+              <button appBtn variant="outline"
+                      appOwnerOnly [createdById]="missionCreatedById" [currentUserId]="currentUserId"
+                      (click)="openRoleEditor(u.id, u.role)">Modifier</button>
+            </div>
+            <ng-template #roleEditor>
+              <div class="role-editor">
+                <label class="sr-only" [attr.for]="'role_'+u.id">Rôle</label>
+                <select [(ngModel)]="selectedRole" [id]="'role_'+u.id">
+                  <option value="Participant">Participant</option>
+                  <option value="Administrateur">Administrateur</option>
+                  <option value="Superviseur">Superviseur</option>
+                </select>
+                <button appBtn variant="primary" (click)="saveRole(u.id)">Enregistrer</button>
+                <button appBtn variant="outline" (click)="cancelRole()">Annuler</button>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+        <div class="right">
+          <app-badge *ngIf="isYou(u.id)" variant="VALIDEE">Vous</app-badge>
+          <div class="row-actions">
+            <button appBtn variant="danger"
+                    appOwnerOnly [createdById]="missionCreatedById" [currentUserId]="currentUserId"
+                    (click)="removeIntervenant(u.id)">Supprimer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-template #empty>
+      <div class="empty">Aucun intervenant pour le moment.</div>
+    </ng-template>
+
+    <div class="add-row"
+         appOwnerOnly
+         [createdById]="missionCreatedById"
+         [currentUserId]="currentUserId"
+         (click)="addIntervenant()">
+      <span class="plus">+</span>
+      <span>Ajouter un intervenant</span>
+    </div>
+  </app-card-body>
+</app-card>
+
+<!-- Modal d'ajout en masse -->
+<div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
+<div class="modal" *ngIf="showModal" role="dialog" aria-modal="true" aria-labelledby="bulkTitle">
+  <div class="modal-header">
+    <h3 id="bulkTitle">Ajouter des intervenants</h3>
+    <button class="close" (click)="closeModal()" aria-label="Fermer">×</button>
+  </div>
+  <div class="modal-body">
+    <p>Un intervenant par ligne. Optionnel: "Nom Prénom - Rôle".</p>
+    <label for="bulkTextModal" class="sr-only">Saisir les intervenants</label>
+    <textarea id="bulkTextModal" [(ngModel)]="bulkText" rows="7" placeholder="Exemples:\nDOLA Koami - Chef Service Étude et Développement\nALEKI Essohanam Richart - Développeur\nTANGBANDJA Kabiratou - Développeuse"></textarea>
+  </div>
+  <div class="modal-footer">
+    <button appBtn variant="outline" (click)="closeModal()">Annuler</button>
+    <button appBtn variant="primary" (click)="addFromText()" [disabled]="!bulkText.trim()">Ajouter</button>
+  </div>
+  
+</div>
+
+<!-- Confirmation suppression -->
+<app-confirmation-dialog
+  *ngIf="showDelete"
+  title="Supprimer l'intervenant"
+  message="Cette action est irréversible. Confirmer la suppression ?"
+  confirmText="Supprimer"
+  cancelText="Annuler"
+  (confirm)="onConfirmDelete()"
+  (cancel)="onCancelDelete()">
+</app-confirmation-dialog>

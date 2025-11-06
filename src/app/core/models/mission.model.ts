@@ -1,6 +1,10 @@
 // ========================================
 // src/app/core/models/mission.model.ts
 // ========================================
+import type { User } from './user.model';
+import type { Entite } from './entite.model';
+import type { Vehicule } from './vehicule.model';
+import { MissionStatut } from './enums';
 
 export interface Mission {
   id: string;

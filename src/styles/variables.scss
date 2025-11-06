@@ -1,0 +1,120 @@
+// ============================================
+// VARIABLES SCSS - FUCEC MISSIONS
+// ============================================
+
+// COULEURS PRINCIPALES
+$primary-color: #2563eb;      // Bleu principal
+$secondary-color: #64748b;    // Gris
+$success-color: #22c55e;      // Vert
+$danger-color: #ef4444;       // Rouge
+$warning-color: #f59e0b;      // Orange
+$info-color: #3b82f6;         // Bleu info
+
+// Variantes de couleurs
+$warning-light: lighten($warning-color, 35%);
+$info-light: lighten($info-color, 35%);
+$success-light: lighten($success-color, 35%);
+$danger-light: lighten($danger-color, 35%);
+
+// COULEURS DE FOND
+$bg-primary: #ffffff;
+$bg-secondary: #f8fafc;
+$bg-dark: #0f172a;
+
+// Aliases utilisés par styles.scss
+$bg-white: $bg-primary;
+$bg-light: #f5f7fb;
+$bg-gray: #eef2f7;
+$white: #ffffff;
+
+// COULEURS DE TEXTE
+$text-primary: #1e293b;
+$text-secondary: #64748b;
+$text-light: #94a3b8;
+$text-muted: #94a3b8;
+$text-white: #ffffff;
+
+// ESPACEMENTS
+$spacing-xs: 0.25rem;   // 4px
+$spacing-sm: 0.5rem;    // 8px
+$spacing-md: 1rem;      // 16px
+$spacing-lg: 1.5rem;    // 24px
+$spacing-xl: 2rem;      // 32px
+$spacing-2xl: 3rem;     // 48px
+$spacing-3xl: 4rem;     // 64px
+$radius-2xl: 1.5rem;
+
+// BORDER RADIUS
+$radius-sm: 0.25rem;
+$radius-md: 0.5rem;
+$radius-lg: 0.75rem;
+$radius-xl: 1rem;
+$radius-full: 9999px;
+
+// OMBRES
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+$shadow-teal: 0 10px 20px rgba(34, 197, 194, 0.3);
+$shadow-red: 0 10px 20px rgba(239, 68, 68, 0.3);
+
+// TRANSITIONS
+$transition-fast: 150ms ease-in-out;
+$transition-normal: 300ms ease-in-out;
+$transition-slow: 500ms ease-in-out;
+$transition-base: 200ms ease;
+
+// BREAKPOINTS
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+
+// Z-INDEX
+$z-dropdown: 1000;
+$z-modal: 1050;
+$z-tooltip: 1100;
+$z-sticky: 1200;
+$z-fixed: 1300;
+
+// Marques/Thème FUCEC utilisés par styles.scss
+$fucec-teal: #14b8a6;
+$fucec-teal-dark: #0f766e;
+$fucec-red: #ef4444;
+$fucec-red-dark: #b91c1c;
+$fucec-red-light: #fecaca;
+
+// Typographie
+$font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+$font-family-heading: $font-family-base;
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-size-xs: 0.75rem;
+$font-size-sm: 0.875rem;
+$font-size-base: 1rem;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.25rem;
+$font-size-2xl: 1.5rem;
+$font-size-3xl: 1.875rem;
+$font-size-4xl: 2.25rem;
+$line-height-tight: 1.2;
+$line-height-normal: 1.5;
+
+// Bordures
+$border-color: #e2e8f0;
+$border-color-dark: #cbd5e1;
+
+// Layout dimensions
+$sidebar-width: 280px;
+$sidebar-collapsed-width: 80px;
+$header-height: 64px;
+
+// Utility color aliases used in styles.scss
+$success: $success-color;
+$warning: $warning-color;
+$danger: $danger-color;
+$info: $info-color;

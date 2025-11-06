@@ -1,0 +1,37 @@
+@import '../../../../styles/variables';
+
+.cdk-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .45);
+  backdrop-filter: blur(1px);
+  z-index: $z-modal - 1;
+}
+
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: $radius-2xl;
+  box-shadow: $shadow-lg;
+  width: 100%;
+  max-width: 420px;
+  z-index: $z-modal;
+  overflow: hidden;
+}
+
+.dialog-header { padding: $spacing-lg $spacing-xl; border-bottom: 1px solid $border-color; }
+.dialog-header h3 { margin: 0; font-size: $font-size-lg; color: $text-primary; }
+
+.dialog-body { padding: $spacing-lg $spacing-xl; color: $text-secondary; }
+
+.dialog-footer {
+  padding: $spacing-md $spacing-xl;
+  border-top: 1px solid $border-color;
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+}

@@ -1,6 +1,7 @@
 // ========================================
 // src/app/core/models/filters.model.ts
 // ========================================
+import { MissionStatut } from './enums';
 
 export interface MissionFilters {
   statut?: MissionStatut[];

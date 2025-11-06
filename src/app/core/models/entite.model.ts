@@ -1,6 +1,8 @@
 // ========================================
 // src/app/core/models/entite.model.ts
 // ========================================
+import { TypeEntite } from './enums';
+import type { User } from './user.model';
 
 export interface Entite {
   id: string;

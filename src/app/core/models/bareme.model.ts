@@ -1,6 +1,7 @@
 // ========================================
 // src/app/core/models/bareme.model.ts
 // ========================================
+import { UserRole } from './enums';
 
 export interface Bareme {
   id: string;

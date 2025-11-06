@@ -1,6 +1,9 @@
 // ========================================
 // src/app/core/models/validation.model.ts
 // ========================================
+import type { Mission } from './mission.model';
+import type { User } from './user.model';
+import { ValidationNiveau, ValidationDecision } from './enums';
 
 export interface Validation {
   id: string;

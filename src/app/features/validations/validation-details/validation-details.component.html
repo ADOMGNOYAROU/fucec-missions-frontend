@@ -1,1 +1,54 @@
-<p>validation-details works!</p>
+<div class="validation-details-page">
+  <div class="details-header">
+    <button class="btn btn-secondary" routerLink="/validations">Retour</button>
+    <div class="title">
+      <h1>{{ item?.missionTitle || 'Détails de Validation' }}</h1>
+      <app-badge [variant]="item?.status || 'EN_ATTENTE'">{{ item?.status === 'EN_ATTENTE' ? 'À valider' : item?.status }}</app-badge>
+    </div>
+    <div class="actions">
+      <button appBtn variant="danger" (click)="openReject()" [disabled]="loading">Rejeter</button>
+      <button appBtn variant="primary" (click)="approve()" [disabled]="loading">Valider</button>
+    </div>
+  </div>
+
+  <div class="details-grid">
+    <app-card>
+      <app-card-header><h2>Mission</h2></app-card-header>
+      <app-card-body>
+        <div class="info-row"><span class="label">Titre</span><span class="value">{{ item?.missionTitle || '-' }}</span></div>
+        <div class="info-row"><span class="label">Créateur</span><span class="value">{{ item?.creatorName || '-' }}</span></div>
+        <div class="info-row"><span class="label">Niveau</span><span class="value">{{ item?.level || '-' }}</span></div>
+      </app-card-body>
+    </app-card>
+
+    <app-card>
+      <app-card-header><h2>Workflow de validation</h2></app-card-header>
+      <app-card-body>
+        <div class="workflow-steps">
+          <div class="step" *ngFor="let step of item?.workflow || []" [class.active]="step.level === item?.currentLevel" [class.completed]="step.status === 'VALIDEE'">
+            <div class="step-icon">
+              <span *ngIf="step.status === 'VALIDEE'">✓</span>
+              <span *ngIf="step.status === 'EN_ATTENTE'">⏳</span>
+              <span *ngIf="step.status === 'PENDING'">○</span>
+            </div>
+            <div class="step-info">
+              <div class="step-level">{{ step.level }}</div>
+              <div class="step-validator">{{ step.validator }}</div>
+              <div class="step-date" *ngIf="step.date">{{ step.date | date:'short' }}</div>
+            </div>
+          </div>
+        </div>
+      </app-card-body>
+    </app-card>
+  </div>
+
+  <app-confirmation-dialog
+    *ngIf="showReject"
+    title="Rejeter la validation"
+    message="Confirmer le rejet de cette validation ?"
+    confirmText="Rejeter"
+    cancelText="Annuler"
+    (confirm)="onConfirmReject()"
+    (cancel)="onCancelReject()">
+  </app-confirmation-dialog>
+</div>

@@ -1,0 +1,55 @@
+@import '../../../../styles/variables';
+
+:host { display: block; }
+
+.app-card-header .actions { margin-left: auto; }
+
+.list { display: grid; gap: $spacing-sm; }
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+  background: $bg-light;
+}
+.left { display: flex; gap: $spacing-md; align-items: center; }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: $fucec-teal; color: $white; display: grid; place-items: center;
+  font-weight: $font-weight-semibold;
+}
+.meta .name { color: $text-primary; font-weight: $font-weight-medium; }
+.meta .role { color: $text-secondary; font-size: $font-size-sm; }
+
+.right { display: flex; align-items: center; gap: $spacing-sm; }
+.row-actions { display: inline-flex; gap: $spacing-sm; }
+
+.empty { color: $text-secondary; text-align: center; padding: $spacing-lg 0; }
+
+/* CTA bottom row */
+.add-row {
+  display: flex; align-items: center; gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg; margin-top: $spacing-md;
+  border: 1px dashed $border-color; border-radius: $radius-lg;
+  color: $text-secondary; cursor: pointer; background: $bg-white;
+  transition: background $transition-fast, border-color $transition-fast;
+  .plus { width: 24px; height: 24px; border-radius: 50%;
+    display: grid; place-items: center; background: $bg-gray; color: $text-primary; }
+  &:hover { background: $bg-light; border-color: $border-color-dark; }
+}
+
+/* Modal styles */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,.35); z-index: $z-modal - 1; }
+.modal {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 100%; max-width: 560px; background: $white; border: 1px solid $border-color;
+  border-radius: $radius-2xl; box-shadow: $shadow-lg; z-index: $z-modal; overflow: hidden;
+}
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: $spacing-lg $spacing-xl; border-bottom: 1px solid $border-color; }
+.modal-body { padding: $spacing-lg $spacing-xl; display: grid; gap: $spacing-md; }
+.modal-footer { padding: $spacing-md $spacing-xl; border-top: 1px solid $border-color; display: flex; justify-content: flex-end; gap: $spacing-sm; }
+.modal textarea { width: 100%; border: 1px solid $border-color; border-radius: $radius-md; padding: $spacing-md; font-family: inherit; }
+.modal .close { background: transparent; border: none; font-size: 1.25rem; cursor: pointer; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }

@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './loader.component.html',
-  styleUrl: './loader.component.scss'
+  styleUrls: ['./loader.component.scss']
 })
 export class LoaderComponent {
 

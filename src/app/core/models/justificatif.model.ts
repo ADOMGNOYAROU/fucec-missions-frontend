@@ -1,6 +1,9 @@
 // ========================================
 // src/app/core/models/justificatif.model.ts
 // ========================================
+import type { Mission } from './mission.model';
+import { TypeJustificatif } from './enums';
+import type { User } from './user.model';
 
 export interface Justificatif {
   id: string;

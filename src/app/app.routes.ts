@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 import { 
   adminGuard, 
   validateurGuard, 
@@ -8,13 +9,6 @@ import {
 } from './core/guards/role.guard';
 
 export const routes: Routes = [
-  // Redirect root to dashboard or login
-  {
-    path: '',
-    redirectTo: '/dashboard',
-    pathMatch: 'full'
-  },
-
   // Auth routes (accessible seulement si non connecté)
   {
     path: 'auth',
@@ -42,6 +36,13 @@ export const routes: Routes = [
     loadComponent: () => import('./layouts/main-layout/main-layout.component')
       .then(m => m.MainLayoutComponent),
     children: [
+      // Redirect root to dashboard within MainLayout
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+
       // Dashboard (accessible à tous les utilisateurs connectés)
       {
         path: 'dashboard',
@@ -58,13 +59,12 @@ export const routes: Routes = [
           .then(m => m.MISSIONS_ROUTES)
       },
 
-      // Validations (accessible aux validateurs uniquement)
       {
-        path: 'validations',
-        canActivate: [validateurGuard],
-        loadChildren: () => import('./features/validations/validations.routes')
-          .then(m => m.VALIDATIONS_ROUTES)
-      },
+  path: 'validations',
+  loadChildren: () => import('./features/validations/validations.routes').then(m => m.VALIDATIONS_ROUTES),
+  canActivate: [roleGuard],
+  data: { roles: ['DG', 'RH', 'CHEF_AGENCE', 'RESPONSABLE_COPEC'] }
+}, 
 
       // Finance (accessible à RH, Comptabilité, DG)
       {

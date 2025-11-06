@@ -4,13 +4,16 @@
     <!-- Logo -->
     <div class="sidebar-header">
       <div class="logo">
-        <div class="logo-icon">F</div>
+        <div class="logo-icon">
+          <img src="assets/images/logo fucec.png" alt="FUCEC Logo" class="logo-image" 
+               (error)="onLogoError($event)">
+        </div>
         <div class="logo-text" *ngIf="!sidebarCollapsed">
           <h3>FUCEC</h3>
           <span>Missions</span>
         </div>
       </div>
-      <button class="toggle-btn" (click)="toggleSidebar()">
+      <button class="toggle-btn" (click)="toggleSidebar()" [attr.aria-expanded]="!sidebarCollapsed" aria-label="Basculer le menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -20,11 +23,11 @@
     </div>
 
     <!-- Navigation Menu -->
-    <nav class="sidebar-nav">
+    <nav class="sidebar-nav" role="navigation" aria-label="Navigation principale">
       <ul class="nav-list">
         <!-- Dashboard -->
         <li class="nav-item">
-          <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+          <a #dashRla="routerLinkActive" routerLink="/dashboard" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Tableau de bord' : null" [attr.aria-current]="dashRla.isActive ? 'page' : null" (click)="onNavClick()">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <rect x="3" y="3" width="7" height="7"></rect>
               <rect x="14" y="3" width="7" height="7"></rect>
@@ -37,7 +40,7 @@
 
         <!-- Missions -->
         <li class="nav-item">
-          <a routerLink="/missions" routerLinkActive="active" class="nav-link">
+          <a #misRla="routerLinkActive" routerLink="/missions" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Mes Missions' : null" [attr.aria-current]="misRla.isActive ? 'page' : null" (click)="onNavClick()">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
@@ -51,7 +54,7 @@
 
         <!-- Validations (pour validateurs uniquement) -->
         <li class="nav-item" *ngIf="canValidate()">
-          <a routerLink="/validations" routerLinkActive="active" class="nav-link">
+          <a #valRla="routerLinkActive" routerLink="/validations" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Validations' : null" [attr.aria-current]="valRla.isActive ? 'page' : null" (click)="onNavClick()">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <polyline points="9 11 12 14 22 4"></polyline>
               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
@@ -63,7 +66,7 @@
 
         <!-- Finance (pour comptabilité, RH, DG) -->
         <li class="nav-item" *ngIf="canAccessFinance()">
-          <a routerLink="/finance" routerLinkActive="active" class="nav-link">
+          <a #finRla="routerLinkActive" routerLink="/finance" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Finance' : null" [attr.aria-current]="finRla.isActive ? 'page' : null" (click)="onNavClick()">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <line x1="12" y1="1" x2="12" y2="23"></line>
               <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
@@ -74,7 +77,7 @@
 
         <!-- Justificatifs -->
         <li class="nav-item">
-          <a routerLink="/justificatifs" routerLinkActive="active" class="nav-link">
+          <a #jusRla="routerLinkActive" routerLink="/justificatifs" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Justificatifs' : null" [attr.aria-current]="jusRla.isActive ? 'page' : null" (click)="onNavClick()">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
               <polyline points="13 2 13 9 20 9"></polyline>
@@ -87,7 +90,7 @@
 
         <!-- Administration (admin seulement) -->
         <li class="nav-item" *ngIf="isAdmin()">
-          <a routerLink="/admin" routerLinkActive="active" class="nav-link">
+          <a #admRla="routerLinkActive" routerLink="/admin" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Administration' : null" [attr.aria-current]="admRla.isActive ? 'page' : null" (click)="onNavClick()">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M12 1v6m0 6v6m7.071-13.071l-4.243 4.243m0 2.828l-4.242 4.243M23 12h-6m-6 0H1m18.071 7.071l-4.243-4.243m-2.828 0l-4.242 4.243"></path>
@@ -111,6 +114,9 @@
       </div>
     </div>
   </aside>
+
+  <!-- Backdrop for mobile to close sidebar on outside click -->
+  <div class="sidebar-backdrop" *ngIf="!sidebarCollapsed" (click)="toggleSidebar()"></div>
 
   <!-- Main Content -->
   <div class="main-content">
@@ -179,3 +185,6 @@
     </main>
   </div>
 </div>
+
+<!-- Global Toasts -->
+<app-toast-container></app-toast-container>

@@ -1,6 +1,7 @@
 // ========================================
 // src/app/core/models/notification.model.ts
 // ========================================
+import type { User } from './user.model';
 
 export interface Notification {
   id: string;

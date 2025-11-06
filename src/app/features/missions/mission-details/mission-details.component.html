@@ -1,1 +1,48 @@
-<p>mission-details works!</p>
+<div class="mission-details-page">
+  <div class="details-header">
+    <button class="btn btn-secondary" routerLink="/missions">Retour</button>
+    <div class="title">
+      <h1>{{ mission?.title || 'Détails de la Mission' }}</h1>
+      <span class="status-badge" [attr.data-status]="mission?.status || 'IN_PROGRESS'">{{ mission?.statusLabel || 'En cours' }}</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline"
+              appOwnerOnly
+              [createdById]="missionCreatedById"
+              [currentUserId]="currentUserId"
+              mode="disable">Télécharger l'ordre</button>
+      <button class="btn btn-primary"
+              appOwnerOnly
+              [createdById]="missionCreatedById"
+              [currentUserId]="currentUserId"
+              mode="disable">Soumettre à validation</button>
+    </div>
+  </div>
+
+  <div class="details-grid">
+    <div class="card">
+      <div class="card-header"><h2>Informations</h2></div>
+      <div class="card-body">
+        <div class="info-row"><span class="label">Titre</span><span class="value">{{ mission?.title || '-' }}</span></div>
+        <div class="info-row"><span class="label">Date de départ</span><span class="value">{{ mission?.startDate | date:'dd/MM/yyyy' }}</span></div>
+        <div class="info-row"><span class="label">Lieu</span><span class="value">{{ mission?.location || '-' }}</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Participants</h2></div>
+      <div class="card-body participants">
+        <div class="participant">
+          <div class="meta">Liste ci-dessous</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-intervenants
+    *ngIf="missionId != null && missionCreatedById != null && currentUserId != null"
+    [missionId]="missionId"
+    [missionCreatedById]="missionCreatedById"
+    [currentUserId]="currentUserId">
+  </app-intervenants>
+</div>

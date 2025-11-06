@@ -1,0 +1,123 @@
+@import '../../../../styles/variables';
+
+.validation-details-page { max-width: 1200px; margin: 0 auto; }
+
+.details-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: $spacing-lg;
+  align-items: center;
+  margin-bottom: $spacing-xl;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+
+  h1 { margin: 0; font-size: $font-size-2xl; font-weight: $font-weight-bold; color: $text-primary; }
+}
+
+.status-badge {
+  padding: 0.375rem 0.875rem;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  &[data-status="EN_ATTENTE"] { background: $warning-light; color: darken($warning, 20%); }
+  &[data-status="VALIDEE"] { background: $info-light; color: darken($info, 20%); }
+  &[data-status="REJETEE"] { background: $danger-light; color: darken($danger, 10%); }
+}
+
+.details-grid { display: grid; grid-template-columns: 2fr 1fr; gap: $spacing-xl; }
+
+.card {
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+
+  .card-header { padding: $spacing-md $spacing-xl; border-bottom: 1px solid $border-color; }
+  .card-header h2 { margin: 0; font-size: $font-size-xl; color: $text-primary; }
+  .card-body { padding: $spacing-lg $spacing-xl; }
+}
+
+.info-row {
+  display: grid; grid-template-columns: 200px 1fr; gap: $spacing-md;
+  padding: $spacing-sm 0; border-bottom: 1px dashed $border-color;
+  &:last-child { border-bottom: none; }
+  .label { color: $text-secondary; }
+  .value { color: $text-primary; font-weight: $font-weight-medium; }
+}
+
+.workflow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  border-radius: $radius-lg;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+
+  &.active {
+    background: $warning-light;
+    border-color: $warning;
+  }
+
+  &.completed {
+    background: $success-light;
+    border-color: $success;
+  }
+
+  .step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $font-size-lg;
+    font-weight: bold;
+
+    .active & {
+      background: $warning;
+      color: white;
+    }
+
+    .completed & {
+      background: $success;
+      color: white;
+    }
+  }
+
+  .step-info {
+    flex: 1;
+
+    .step-level {
+      font-weight: $font-weight-bold;
+      color: $text-primary;
+      margin-bottom: 2px;
+    }
+
+    .step-validator {
+      color: $text-secondary;
+      font-size: $font-size-sm;
+    }
+
+    .step-date {
+      color: $text-muted;
+      font-size: $font-size-xs;
+      margin-top: 2px;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-lg) {
+  .details-grid { grid-template-columns: 1fr; }
+}

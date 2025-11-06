@@ -1,1 +1,56 @@
-<p>validation-list works!</p>
+<div class="validations-page">
+  <div class="page-header">
+    <h1>Validations</h1>
+    <div class="actions">
+      <a appBtn variant="outline" routerLink="/dashboard">Retour Dashboard</a>
+    </div>
+  </div>
+
+  <app-loader *ngIf="loading"></app-loader>
+
+  <div class="list-card" *ngIf="!loading">
+    <div class="filters">
+      <button appBtn variant="outline" (click)="applyRoleFilter(undefined)">Tous</button>
+      <button appBtn variant="outline" (click)="applyRoleFilter('N1')">N1</button>
+      <button appBtn variant="outline" (click)="applyRoleFilter('N2')">N2</button>
+      <button appBtn variant="outline" (click)="applyRoleFilter('N3')">N3</button>
+    </div>
+
+    <div class="list-header">
+      <span>Mission</span>
+      <span>Niveau</span>
+      <span>Créateur</span>
+      <span>Statut</span>
+      <span></span>
+    </div>
+
+    <div class="list-item" *ngFor="let v of items">
+      <div class="col title">{{ v.missionTitle }}</div>
+      <div class="col">{{ v.level }}</div>
+      <div class="col">{{ v.creatorName }}</div>
+      <div class="col"><app-badge [variant]="v.status">{{ v.status === 'EN_ATTENTE' ? 'À valider' : v.status }}</app-badge></div>
+      <div class="col actions">
+        <button appBtn variant="danger" (click)="openReject(v.id)">Rejeter</button>
+        <button appBtn variant="primary" (click)="approve(v.id)">Valider</button>
+      </div>
+    </div>
+
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <polyline points="9 11 12 14 22 4"></polyline>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+      </svg>
+      <p *ngIf="!items?.length">Aucune validation en attente</p>
+    </div>
+  </div>
+
+  <app-confirmation-dialog
+    *ngIf="showReject"
+    title="Rejeter la validation"
+    message="Confirmer le rejet de cette validation ?"
+    confirmText="Rejeter"
+    cancelText="Annuler"
+    (confirm)="onConfirmReject()"
+    (cancel)="onCancelReject()">
+  </app-confirmation-dialog>
+</div>

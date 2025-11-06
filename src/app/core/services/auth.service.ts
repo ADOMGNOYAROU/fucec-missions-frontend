@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Router } from '@angular/router';
@@ -28,7 +29,9 @@ export type UserRole =
   | 'DG' 
   | 'RH' 
   | 'COMPTABLE' 
-  | 'ADMIN';
+  | 'ADMIN'
+  | 'DIRECTEUR_FINANCES'
+  | 'CHAUFFEUR';
 
 export interface LoginResponse {
   access_token: string;
@@ -44,29 +47,133 @@ export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
   
   // BehaviorSubject pour suivre l'état de connexion
-  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  private isBrowser = false;
 
   constructor(
     private http: HttpClient,
-    private router: Router
-  ) {}
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      const u = this.getUserFromStorage();
+      if (u) this.currentUserSubject.next(u);
+      // Dev auto-login (only if enabled)
+      if (!u && environment.devAutoLogin) {
+        const devUser = environment.devUser as unknown as User;
+        this.storeUser(devUser);
+        // store a safe dev token
+        this.storeTokens('dev', 'dev');
+        this.currentUserSubject.next(devUser);
+        // Redirect to dashboard if currently on auth
+        try {
+          const url = this.router.url || '';
+          if (url.startsWith('/auth')) {
+            this.router.navigate(['/dashboard']);
+          }
+        } catch {}
+      }
+    }
+  }
 
   /**
-   * Connexion utilisateur
+   * Connexion utilisateur (mode mock pour développement)
    */
   login(identifiant: string, motDePasse: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, {
-      identifiant,
-      mot_de_passe: motDePasse
-    }).pipe(
-      tap(response => {
-        // Stocker les tokens et l'utilisateur
-        this.storeTokens(response.access_token, response.refresh_token);
-        this.storeUser(response.user);
-        this.currentUserSubject.next(response.user);
-      })
-    );
+    // Mode mock - simuler une connexion réussie
+    return new Observable(observer => {
+      // Simuler un délai réseau
+      setTimeout(() => {
+        // Créer un utilisateur mock basé sur l'identifiant
+        const mockUsers: Record<string, User> = {
+          'chef.agence.test': {
+            id: '1',
+            identifiant: 'chef.agence.test',
+            nom: 'Chef',
+            prenom: 'Agence',
+            email: 'chef.agence@example.com',
+            role: 'CHEF_AGENCE'
+          },
+          'agent.test': {
+            id: '2',
+            identifiant: 'agent.test',
+            nom: 'Agent',
+            prenom: 'Simple',
+            email: 'agent@example.com',
+            role: 'AGENT'
+          },
+          'dg.test': {
+            id: '3',
+            identifiant: 'dg.test',
+            nom: 'Direction',
+            prenom: 'Générale',
+            email: 'dg@example.com',
+            role: 'DG'
+          },
+          'rh.test': {
+            id: '4',
+            identifiant: 'rh.test',
+            nom: 'Ressources',
+            prenom: 'Humaines',
+            email: 'rh@example.com',
+            role: 'RH'
+          },
+          'comptable.test': {
+            id: '5',
+            identifiant: 'comptable.test',
+            nom: 'Comptable',
+            prenom: 'Principal',
+            email: 'comptable@example.com',
+            role: 'COMPTABLE'
+          },
+          'admin.test': {
+            id: '6',
+            identifiant: 'admin.test',
+            nom: 'Administrateur',
+            prenom: 'Système',
+            email: 'admin@example.com',
+            role: 'ADMIN'
+          },
+          'responsable.copec.test': {
+            id: '7',
+            identifiant: 'responsable.copec.test',
+            nom: 'Directeur',
+            prenom: 'Services',
+            email: 'responsable.copec@example.com',
+            role: 'RESPONSABLE_COPEC'
+          }
+        };
+
+        const user = mockUsers[identifiant];
+        
+        if (user && motDePasse.length >= 6) {
+          // Connexion réussie
+          const response: LoginResponse = {
+            access_token: 'mock_token_' + Date.now(),
+            refresh_token: 'mock_refresh_' + Date.now(),
+            user: user,
+            expires_in: 3600
+          };
+          
+          // Stocker les tokens et l'utilisateur
+          this.storeTokens(response.access_token, response.refresh_token);
+          this.storeUser(response.user);
+          this.currentUserSubject.next(response.user);
+          
+          observer.next(response);
+        } else {
+          // Connexion échouée
+          observer.error({
+            status: 401,
+            error: { message: 'Identifiant ou mot de passe incorrect' }
+          });
+        }
+        
+        observer.complete();
+      }, 500); // Délai de 500ms pour simuler le réseau
+    });
   }
 
   /**
@@ -77,9 +184,11 @@ export class AuthService {
     this.http.post(`${this.apiUrl}/logout`, {}).subscribe();
 
     // Nettoyer le localStorage
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('current_user');
+    if (this.isBrowser) {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('current_user');
+    }
     
     // Réinitialiser le BehaviorSubject
     this.currentUserSubject.next(null);
@@ -148,6 +257,7 @@ export class AuthService {
    * Obtenir le token d'accès
    */
   getAccessToken(): string | null {
+    if (!this.isBrowser) return null;
     return localStorage.getItem('access_token');
   }
 
@@ -155,6 +265,7 @@ export class AuthService {
    * Obtenir le refresh token
    */
   getRefreshToken(): string | null {
+    if (!this.isBrowser) return null;
     return localStorage.getItem('refresh_token');
   }
 
@@ -162,6 +273,7 @@ export class AuthService {
    * Stocker les tokens
    */
   private storeTokens(accessToken: string, refreshToken: string): void {
+    if (!this.isBrowser) return;
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('refresh_token', refreshToken);
   }
@@ -170,6 +282,7 @@ export class AuthService {
    * Stocker l'utilisateur
    */
   private storeUser(user: User): void {
+    if (!this.isBrowser) return;
     localStorage.setItem('current_user', JSON.stringify(user));
   }
 
@@ -177,6 +290,7 @@ export class AuthService {
    * Récupérer l'utilisateur du storage
    */
   private getUserFromStorage(): User | null {
+    if (!this.isBrowser) return null;
     const userJson = localStorage.getItem('current_user');
     return userJson ? JSON.parse(userJson) : null;
   }
@@ -185,6 +299,8 @@ export class AuthService {
    * Vérifier si le token est expiré
    */
   private isTokenExpired(token: string): boolean {
+    if (!this.isBrowser) return true;
+    if (token === 'dev') return false;
     try {
       // Décoder le JWT (simple version sans library)
       const payload = JSON.parse(atob(token.split('.')[1]));

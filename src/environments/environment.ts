@@ -20,4 +20,15 @@ export const environment = {
   // Délais SLA
   slaDelaiValidation: 72, // heures
   slaDelaiJustificatifs: 72, // heures
+
+  // Dev helpers
+  devAutoLogin: true,
+  devUser: {
+    id: 'dev-chef-agence',
+    identifiant: 'chef.agence.test',
+    nom: 'Dupont',
+    prenom: 'Jean',
+    email: 'chef.agence@example.com',
+    role: 'CHEF_AGENCE',
+  }
 };

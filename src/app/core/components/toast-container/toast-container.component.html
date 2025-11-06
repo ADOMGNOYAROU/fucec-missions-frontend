@@ -1,0 +1,11 @@
+<div class="toast-container" aria-live="polite" aria-atomic="true">
+  <div class="toast" *ngFor="let t of toasts$ | async; trackBy: trackById" [class]="'toast '+t.variant">
+    <div class="icon" aria-hidden="true">
+      <span *ngIf="t.variant === 'success'">✓</span>
+      <span *ngIf="t.variant === 'error'">✕</span>
+      <span *ngIf="t.variant === 'info'">i</span>
+      <span *ngIf="t.variant === 'warning'">!</span>
+    </div>
+    <div class="message">{{ t.message }}</div>
+  </div>
+</div>

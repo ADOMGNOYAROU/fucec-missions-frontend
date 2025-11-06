@@ -1,0 +1,133 @@
+<div class="profil-container">
+  <!-- Header -->
+  <div class="profil-header">
+    <div class="header-content">
+      <button class="btn-back" routerLink="/dashboard">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Retour
+      </button>
+      <div class="header-title">
+        <h1>Mon Profil</h1>
+        <p>Gérez vos informations personnelles et paramètres</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Content -->
+  <div class="profil-content">
+    <!-- User Info Card -->
+    <div class="info-card">
+      <div class="card-header">
+        <h2>Informations Personnelles</h2>
+      </div>
+      <div class="card-body">
+        <div class="user-avatar-large">
+          {{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}
+        </div>
+        <div class="user-details">
+          <h3>{{ currentUser?.prenom }} {{ currentUser?.nom }}</h3>
+          <p class="user-email">{{ currentUser?.email }}</p>
+          <span class="user-role-badge">{{ getRoleLabel(currentUser?.role) }}</span>
+          <div class="role-description" *ngIf="isChefAgence()">
+            <p class="role-info">Responsable de l'agence - Validation des missions et gestion d'équipe</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions-card">
+      <div class="card-header">
+        <h2>Actions Rapides</h2>
+      </div>
+      <div class="card-body">
+        <div class="actions-grid">
+          <button class="action-btn primary" type="button" (click)="navigateToMissions()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            <span>Mes Missions</span>
+          </button>
+
+          <button class="action-btn secondary" type="button" (click)="navigateToDashboard()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>Tableau de Bord</span>
+          </button>
+
+          <button class="action-btn success" type="button" (click)="navigateToValidations()" *ngIf="canValidateMissions()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline points="9 11 12 14 22 4"></polyline>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            <span>Validations</span>
+          </button>
+
+          <button class="action-btn info" type="button" (click)="navigateToJustificatifs()" *ngIf="canAccessJustificatifs()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+              <polyline points="13 2 13 9 20 9"></polyline>
+            </svg>
+            <span>Justificatifs</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chef d'Agence Specific Section -->
+    <div class="responsibilities-card" *ngIf="isChefAgence()">
+      <div class="card-header">
+        <h2>Responsabilités & Permissions</h2>
+      </div>
+      <div class="card-body">
+        <div class="permissions-list">
+          <div class="permission-item">
+            <div class="permission-icon success">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="permission-content">
+              <h4>Validation des missions</h4>
+              <p>Approuver ou rejeter les demandes de mission soumises par les agents</p>
+            </div>
+          </div>
+
+          <div class="permission-item">
+            <div class="permission-icon info">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            </div>
+            <div class="permission-content">
+              <h4>Gestion des missions</h4>
+              <p>Consulter et gérer toutes les missions de l'agence</p>
+            </div>
+          </div>
+
+          <div class="permission-item">
+            <div class="permission-icon warning">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                <polyline points="13 2 13 9 20 9"></polyline>
+              </svg>
+            </div>
+            <div class="permission-content">
+              <h4>Supervision des justificatifs</h4>
+              <p>Contrôler et valider les justificatifs de mission</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

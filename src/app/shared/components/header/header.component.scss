@@ -1,0 +1,33 @@
+@import '../../../../styles/variables';
+
+.app-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-xl;
+
+  .left {
+    display: grid;
+    gap: $spacing-xs;
+  }
+
+  .title {
+    margin: 0;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+  }
+
+  .subtitle {
+    color: $text-secondary;
+    font-size: $font-size-sm;
+  }
+
+  .right { display: inline-flex; align-items: center; gap: $spacing-sm; }
+}
+
+@media (max-width: $breakpoint-md) {
+  .app-page-header { gap: $spacing-md; }
+  .app-page-header .title { font-size: $font-size-xl; }
+}

@@ -1,0 +1,254 @@
+@import '../../../styles/variables';
+
+.profil-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 $spacing-lg $spacing-2xl;
+
+  .profil-header {
+    margin-bottom: $spacing-xl;
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: $spacing-lg;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: $spacing-sm;
+      background: transparent;
+      border: none;
+      color: $text-secondary;
+      font-weight: $font-weight-medium;
+      padding: $spacing-sm $spacing-md;
+      border-radius: $radius-md;
+      cursor: pointer;
+      transition: all $transition-fast;
+
+      &:hover {
+        background: $bg-gray;
+        color: $text-primary;
+      }
+
+      svg { stroke-width: 2.25; }
+    }
+
+    .header-title {
+      h1 {
+        margin: 0 0 $spacing-xs 0;
+        font-size: $font-size-3xl;
+        font-weight: $font-weight-bold;
+        color: $text-primary;
+      }
+      p {
+        margin: 0;
+        color: $text-secondary;
+      }
+    }
+  }
+
+  .profil-content {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xl;
+  }
+}
+
+// Cards
+.info-card,
+.actions-card,
+.settings-card {
+  background: $white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+
+  .card-header {
+    padding: $spacing-xl;
+    border-bottom: 1px solid $border-color;
+    background: linear-gradient(135deg, rgba($fucec-teal, 0.05) 0%, rgba($fucec-teal, 0.02) 100%);
+
+    h2 {
+      margin: 0;
+      font-size: $font-size-xl;
+      font-weight: $font-weight-semibold;
+      color: $text-primary;
+    }
+  }
+
+  .card-body {
+    padding: $spacing-xl;
+  }
+}
+
+// User Info
+.user-avatar-large {
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-full;
+  background: linear-gradient(135deg, $fucec-teal, darken($fucec-teal, 10%));
+  color: $white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-lg;
+}
+
+.user-details {
+  h3 {
+    margin: 0 0 $spacing-sm 0;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+  }
+
+  .user-email {
+    margin: 0 0 $spacing-md 0;
+    color: $text-secondary;
+    font-size: $font-size-sm;
+  }
+
+  .user-role-badge {
+    display: inline-block;
+    padding: $spacing-xs $spacing-sm;
+    background: rgba($fucec-teal, 0.1);
+    color: $fucec-teal;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+  }
+
+  .role-description {
+    margin-top: $spacing-md;
+    padding-top: $spacing-md;
+    border-top: 1px solid $border-color;
+
+    .role-info {
+      margin: 0;
+      font-size: $font-size-sm;
+      color: $text-secondary;
+      font-style: italic;
+    }
+  }
+}
+
+// Actions Grid
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: $spacing-lg;
+
+  .action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-xl;
+    border: 2px solid $border-color;
+    border-radius: $radius-lg;
+    background: $white;
+    color: $text-primary;
+    text-decoration: none;
+    transition: all $transition-fast;
+    cursor: pointer;
+
+    &:hover {
+      border-color: $fucec-teal;
+      box-shadow: 0 4px 12px rgba($fucec-teal, 0.15);
+      transform: translateY(-2px);
+    }
+
+    &.primary:hover { border-color: $fucec-teal; }
+    &.secondary:hover { border-color: $text-secondary; }
+    &.info:hover { border-color: $info; }
+
+    svg {
+      stroke-width: 1.5;
+    }
+
+    span {
+      font-weight: $font-weight-medium;
+      text-align: center;
+    }
+  }
+}
+
+// Permissions List
+.permissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+
+  .permission-item {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-md;
+    padding: $spacing-lg;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    background: $bg-light;
+    transition: all $transition-fast;
+
+    &:hover {
+      border-color: $fucec-teal;
+      box-shadow: 0 4px 12px rgba($fucec-teal, 0.1);
+    }
+
+    .permission-icon {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: $radius-lg;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &.success { background: rgba($success, 0.1); color: $success; }
+      &.info { background: rgba($info, 0.1); color: $info; }
+      &.warning { background: rgba($warning, 0.1); color: $warning; }
+    }
+
+    .permission-content {
+      flex: 1;
+
+      h4 {
+        margin: 0 0 $spacing-xs 0;
+        font-size: $font-size-base;
+        font-weight: $font-weight-semibold;
+        color: $text-primary;
+      }
+
+      p {
+        margin: 0;
+        font-size: $font-size-sm;
+        color: $text-secondary;
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: $breakpoint-md) {
+  .profil-container {
+    padding: 0 $spacing-md $spacing-xl;
+  }
+
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-md;
+
+    .setting-info {
+      width: 100%;
+    }
+  }
+}

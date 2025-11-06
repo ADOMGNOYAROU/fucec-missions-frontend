@@ -1,1 +1,65 @@
-<p>upload-justificatifs works!</p>
+<div class="upload-page">
+  <app-header title="Uploader des justificatifs" subtitle="PDF, JPG, PNG (max 5 Mo chacun)"></app-header>
+
+  <app-card>
+    <app-card-header><h2>Sélection des fichiers</h2></app-card-header>
+    <app-card-body>
+      <div class="dropzone" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+        <div class="dz-content">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p><strong>Glissez-déposez</strong> vos fichiers ici</p>
+          <p>ou</p>
+          <label class="file-btn">
+            <input type="file" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png" multiple hidden>
+            <span appBtn variant="outline">Choisir des fichiers</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="files" *ngIf="files.length">
+        <div class="file-row" *ngFor="let f of files; let i = index">
+          <div class="file-info">
+            <div class="file-name">{{ f.name }}</div>
+            <div class="file-meta">{{ (f.size/1024) | number:'1.0-0' }} Ko</div>
+          </div>
+          <div class="file-actions">
+            <button appBtn variant="danger" (click)="removeFile(i)">Retirer</button>
+          </div>
+          <div class="file-meta-form">
+            <label class="sr-only" [attr.for]="'cat_'+i">Catégorie</label>
+            <select [(ngModel)]="meta[f.name].category" [id]="'cat_'+i">
+              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+            </select>
+            <label class="sr-only" [attr.for]="'amt_'+i">Montant</label>
+            <input type="number" step="0.01" min="0" [(ngModel)]="meta[f.name].amount" [id]="'amt_'+i" placeholder="Montant"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary" *ngIf="files.length">
+        <div class="total">Total: {{ totalAmount | number:'1.2-2' }} CFA</div>
+        <div class="budget" *ngIf="missionBudget != null">Budget mission: {{ missionBudget | number:'1.2-2' }} CFA</div>
+        <div class="warning" *ngIf="overBudget">Attention: le total dépasse le budget</div>
+      </div>
+
+      <div class="actions">
+        <a appBtn variant="outline" routerLink="/justificatifs">Annuler</a>
+        <button appBtn variant="primary" [disabled]="!files.length || loading" (click)="upload()">Importer</button>
+      </div>
+    </app-card-body>
+  </app-card>
+</div>
+
+<app-confirmation-dialog
+  *ngIf="showConfirm"
+  title="Dépassement du budget"
+  message="Le total des justificatifs dépasse le budget de la mission. Continuer malgré tout ?"
+  confirmText="Continuer"
+  cancelText="Annuler"
+  (confirm)="onConfirmUpload()"
+  (cancel)="onCancelConfirm()">
+</app-confirmation-dialog>

@@ -1,6 +1,8 @@
 // ========================================
 // src/app/core/models/user.model.ts
 // ========================================
+import type { Entite } from './entite.model';
+import { UserRole } from './enums';
 
 export interface User {
   id: string;

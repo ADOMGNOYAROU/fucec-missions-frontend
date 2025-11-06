@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -25,7 +26,42 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-    
+
+    // Force dev auto-login if enabled and not logged in
+    if (this.authService && typeof window !== 'undefined') {
+      if (environment.devAutoLogin && !this.authService.isLoggedIn()) {
+        const devUser = environment.devUser as any;
+        localStorage.setItem('current_user', JSON.stringify(devUser));
+        localStorage.setItem('access_token', 'dev');
+        localStorage.setItem('refresh_token', 'dev');
+        this.authService['currentUserSubject'].next(devUser);
+
+        // Redirect based on role
+        switch (devUser.role) {
+          case 'AGENT':
+            this.router.navigate(['/missions']);
+            return;
+          case 'CHEF_AGENCE':
+            this.router.navigate(['/dashboard']); // Dashboard pour voir tous les éléments
+            return;
+          case 'RESPONSABLE_COPEC':
+            this.router.navigate(['/dashboard']); // Même accès que CHEF_AGENCE
+            return;
+          case 'DG':
+          case 'RH':
+          case 'COMPTABLE':
+            this.router.navigate(['/dashboard']);
+            return;
+          case 'ADMIN':
+            this.router.navigate(['/admin']);
+            return;
+          default:
+            this.router.navigate(['/dashboard']);
+            return;
+        }
+      }
+    }
+
     // Si déjà connecté, rediriger vers dashboard
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/dashboard']);
@@ -65,8 +101,10 @@ export class LoginComponent implements OnInit {
             this.router.navigate(['/missions']);
             break;
           case 'CHEF_AGENCE':
+            this.router.navigate(['/dashboard']); // Dashboard pour voir tous les éléments
+            break;
           case 'RESPONSABLE_COPEC':
-            this.router.navigate(['/validations']);
+            this.router.navigate(['/dashboard']); // Même accès que CHEF_AGENCE
             break;
           case 'DG':
           case 'RH':

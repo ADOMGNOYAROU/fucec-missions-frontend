@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AuthService, User, UserRole } from '../../core/services/auth.service';
+import { ToastContainerComponent } from '../../core/components/toast-container/toast-container.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ToastContainerComponent],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss']
 })
@@ -28,9 +30,44 @@ export class MainLayoutComponent implements OnInit {
     private router: Router
   ) {}
 
+  /**
+   * Forcer le rechargement de l'utilisateur dev (pour le développement)
+   */
+  private forceDevReload(): void {
+    if (typeof window !== 'undefined') {
+      // Vider l'ancien utilisateur
+      localStorage.removeItem('current_user');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      
+      // Forcer le rechargement de l'utilisateur dev
+      if (environment.devAutoLogin && !this.authService.getCurrentUser()) {
+        const devUser = environment.devUser as unknown as User;
+        localStorage.setItem('current_user', JSON.stringify(devUser));
+        localStorage.setItem('access_token', 'dev');
+        localStorage.setItem('refresh_token', 'dev');
+        this.authService['currentUserSubject'].next(devUser);
+      }
+    }
+  }
+
   ngOnInit(): void {
+    // Forcer le rechargement de l'utilisateur dev
+    this.forceDevReload();
+    
     // Récupérer l'utilisateur courant
     this.currentUser = this.authService.getCurrentUser();
+    console.log('=== DEBUG MAIN LAYOUT ===');
+    console.log('Utilisateur actuel:', this.currentUser);
+    console.log('Rôle actuel:', this.currentUser?.role);
+    console.log('canValidate() called, result:', this.canValidate());
+    console.log('canAccessFinance() called, result:', this.canAccessFinance());
+    console.log('isAdmin() called, result:', this.isAdmin());
+    console.log('allStaffGuard should allow access for CHEF_AGENCE');
+    console.log('Sidebar collapsed:', this.sidebarCollapsed);
+    console.log('User menu open:', this.userMenuOpen);
+    console.log('Notifications open:', this.notificationsOpen);
+    console.log('========================');
     
     // S'abonner aux changements d'utilisateur
     this.authService.currentUser$.subscribe(user => {
@@ -104,6 +141,17 @@ export class MainLayoutComponent implements OnInit {
   }
 
   /**
+   * Ferme la sidebar en mobile après un clic de navigation
+   */
+  onNavClick(): void {
+    try {
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        this.sidebarCollapsed = true;
+      }
+    } catch {}
+  }
+
+  /**
    * Mettre à jour le titre de la page selon la route
    */
   private updatePageTitle(): void {
@@ -144,11 +192,13 @@ export class MainLayoutComponent implements OnInit {
    * Vérifier si l'utilisateur peut valider
    */
   canValidate(): boolean {
-    return this.authService.hasAnyRole([
+    const result = this.authService.hasAnyRole([
       'CHEF_AGENCE' as UserRole,
       'RESPONSABLE_COPEC' as UserRole,
       'DG' as UserRole
     ]);
+    console.log('canValidate() called, result:', result);
+    return result;
   }
 
   /**
@@ -182,15 +232,40 @@ export class MainLayoutComponent implements OnInit {
       RESPONSABLE_COPEC: 'Responsable COPEC',
       DG: 'Directeur Général',
       RH: 'Ressources Humaines',
-      COMPTABLE: 'Comptabilité',
-      ADMIN: 'Administrateur'
+      COMPTABLE: 'Comptable',
+      ADMIN: 'Administrateur',
+      DIRECTEUR_FINANCES: 'Directeur des Finances',
+      CHAUFFEUR: 'Chauffeur'
     };
     
     return roleLabels[role] || role;
   }
 
   /**
-   * Déconnexion
+   * Gestionnaire d'erreur pour le logo
+   */
+  onLogoError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    console.warn('Erreur de chargement du logo:', img.src);
+    // Fallback: afficher les initiales FUCEC
+    img.style.display = 'none';
+    const fallback = document.createElement('div');
+    fallback.textContent = 'FU';
+    fallback.style.cssText = `
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 0.75rem;
+    `;
+    img.parentElement?.appendChild(fallback);
+  }
+
+  /**
+   * Déconnexion de l'utilisateur
    */
   logout(): void {
     if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {

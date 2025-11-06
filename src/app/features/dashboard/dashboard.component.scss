@@ -191,16 +191,19 @@
   align-items: center;
   justify-content: space-between;
   padding: $spacing-lg;
-  background: $bg-light;
+  background: $white;
   border-radius: $radius-lg;
   cursor: pointer;
   transition: all $transition-fast;
-  border: 1px solid transparent;
+  border: 1px solid $border-color;
 
   &:hover {
-    background: $white;
     border-color: $fucec-teal;
-    box-shadow: $shadow-sm;
+    box-shadow: $shadow-md;
+  }
+
+  & + .mission-item {
+    margin-top: $spacing-xs;
   }
 
   .mission-info {
@@ -214,6 +217,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      font-size: $font-size-lg;
     }
 
     .mission-meta {

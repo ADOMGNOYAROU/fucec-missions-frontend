@@ -1,1 +1,32 @@
-<p>auth-layout works!</p>
+<div class="auth-layout">
+  <div class="brand-panel">
+    <div class="brand">
+      <div class="logo">F</div>
+      <div class="texts">
+        <h1>FUCEC</h1>
+        <p>Missions & Déplacements</p>
+      </div>
+    </div>
+    <div class="illustration">
+      <svg width="220" height="220" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      <p>Optimisez la gestion de vos missions</p>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="card auth-card">
+      <div class="card-header">
+        <h2>Authentification</h2>
+      </div>
+      <div class="card-body">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+    <div class="meta">
+      <a routerLink="/">Retour à l'accueil</a>
+    </div>
+  </div>
+</div>

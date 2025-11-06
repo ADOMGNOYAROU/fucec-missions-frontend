@@ -11,6 +11,12 @@
       <div class="header-title">
         <h1>Nouvelle Demande d'Ordre de Mission</h1>
         <p>Remplissez tous les champs requis pour créer votre demande</p>
+        <div class="auto-save-indicator" *ngIf="missionForm.dirty">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Sauvegarde automatique activée
+        </div>
       </div>
     </div>
   </div>
@@ -89,6 +95,9 @@
           <div class="error-message" *ngIf="missionForm.get('dateDebut')?.invalid && missionForm.get('dateDebut')?.touched">
             La date de départ est requise
           </div>
+          <div class="error-message" *ngIf="missionForm.hasError('dateDebutPast')">
+            La date de départ ne peut pas être antérieure à la date du jour
+          </div>
         </div>
 
         <!-- Date de retour -->
@@ -102,6 +111,9 @@
           />
           <div class="error-message" *ngIf="missionForm.get('dateFin')?.invalid && missionForm.get('dateFin')?.touched">
             La date de retour est requise
+          </div>
+          <div class="error-message" *ngIf="missionForm.hasError('dateFinPast')">
+            La date de retour ne peut pas être antérieure à la date du jour
           </div>
           <div class="error-message" *ngIf="missionForm.hasError('dateInvalid')">
             La date de retour doit être après la date de départ
@@ -166,7 +178,7 @@
         <!-- Participants ajoutés -->
         <div class="participant-item" *ngFor="let participant of selectedParticipants; let i = index">
           <div class="participant-avatar">
-            {{ participant.prenom?.charAt(0) }}{{ participant.nom?.charAt(0) }}
+            {{ participant.prenom.charAt(0) }}{{ participant.nom.charAt(0) }}
           </div>
           <div class="participant-info">
             <div class="participant-name">{{ participant.prenom }} {{ participant.nom }}</div>
@@ -202,7 +214,7 @@
             <circle cx="18.5" cy="18.5" r="2.5"></circle>
           </svg>
         </div>
-        <h2>Moyen de Déplacement</h2>
+        <h2>Transport et Mobilité</h2>
       </div>
 
       <div class="form-grid">
@@ -258,25 +270,6 @@
             Le budget estimé est requis
           </div>
         </div>
-
-        <!-- Avance demandée -->
-        <div class="form-group">
-          <label for="avanceDemandee" class="required">Avance demandée (FCFA)</label>
-          <input
-            type="number"
-            id="avanceDemandee"
-            formControlName="avanceDemandee"
-            placeholder="0"
-            class="form-control"
-            min="0"
-          />
-          <div class="error-message" *ngIf="missionForm.get('avanceDemandee')?.invalid && missionForm.get('avanceDemandee')?.touched">
-            L'avance demandée est requise
-          </div>
-          <div class="error-message" *ngIf="missionForm.hasError('avanceSuperieureBudget')">
-            L'avance ne peut pas dépasser le budget estimé
-          </div>
-        </div>
       </div>
 
       <!-- Calcul automatique -->
@@ -285,39 +278,37 @@
           <span>Budget estimé:</span>
           <strong>{{ missionForm.get('budgetEstime')?.value | number:'1.0-0' }} FCFA</strong>
         </div>
-        <div class="summary-item">
-          <span>Avance demandée:</span>
-          <strong>{{ missionForm.get('avanceDemandee')?.value | number:'1.0-0' }} FCFA</strong>
-        </div>
-        <div class="summary-item highlight">
-          <span>Pourcentage d'avance:</span>
-          <strong>{{ calculerPourcentageAvance() }}%</strong>
-        </div>
       </div>
     </div>
 
     <!-- Actions -->
     <div class="form-actions">
-      <button type="button" class="btn-secondary" (click)="saveDraft()">
+      <button type="button" class="btn btn-secondary" routerLink="/missions">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-          <polyline points="17 21 17 13 7 13 7 21"></polyline>
-          <polyline points="7 3 7 8 15 8"></polyline>
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
-        Enregistrer le brouillon
+        Annuler
       </button>
 
-      <button type="submit" class="btn-primary" [disabled]="missionForm.invalid || submitting">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" *ngIf="!submitting">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      <button type="button" class="btn btn-primary" (click)="confirmSubmit()" [disabled]="missionForm.invalid || submitting">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
         </svg>
-        <svg *ngIf="submitting" class="spinner" width="18" height="18" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"></circle>
-          <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        {{ submitting ? 'Envoi en cours...' : 'Soumettre la demande' }}
+        Détails
       </button>
     </div>
+
+    <!-- Boîte de dialogue de confirmation -->
+    <!-- <app-confirmation-dialog
+      *ngIf="showConfirmDialog"
+      title="Confirmer la soumission"
+      message="Êtes-vous sûr de vouloir soumettre cette demande de mission ? Une fois soumise, elle sera envoyée pour validation."
+      confirmText="Soumettre"
+      cancelText="Annuler"
+      (confirm)="onSubmit()"
+      (cancel)="cancelSubmit()">
+    </app-confirmation-dialog> -->
   </form>
 </div>

@@ -1,0 +1,85 @@
+@import '../../../styles/variables';
+
+.auth-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0;
+  background: $bg-light;
+}
+
+.brand-panel {
+  background: linear-gradient(135deg, rgba($fucec-teal, 0.1) 0%, rgba($fucec-teal, 0.05) 100%);
+  padding: $spacing-2xl;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+
+    .logo {
+      width: 3.25rem;
+      height: 3.25rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, $fucec-red-dark 0%, $fucec-red 100%);
+      color: $white;
+      font-weight: $font-weight-bold;
+      box-shadow: $shadow-red;
+    }
+
+    .texts {
+      h1 { margin: 0; font-size: $font-size-2xl; color: $text-primary; }
+      p { margin: 0; color: $text-secondary; }
+    }
+  }
+
+  .illustration {
+    text-align: center;
+    color: $text-secondary;
+
+    svg { stroke-width: 1.75; color: $fucec-teal; }
+    p { margin-top: $spacing-md; }
+  }
+}
+
+.auth-panel {
+  display: grid;
+  place-items: center;
+  padding: $spacing-2xl $spacing-xl;
+
+  .auth-card {
+    width: 100%;
+    max-width: 460px;
+    background: $white;
+    border: 1px solid $border-color;
+    border-radius: $radius-2xl;
+    box-shadow: $shadow-lg;
+
+    .card-header {
+      padding: $spacing-lg $spacing-xl;
+      border-bottom: 1px solid $border-color;
+      h2 { margin: 0; font-size: $font-size-xl; color: $text-primary; }
+    }
+
+    .card-body { padding: $spacing-xl; }
+  }
+
+  .meta {
+    margin-top: $spacing-lg;
+    text-align: center;
+    a { color: $fucec-teal; text-decoration: none; }
+    a:hover { color: $fucec-teal-dark; }
+  }
+}
+
+@media (max-width: $breakpoint-lg) {
+  .auth-layout { grid-template-columns: 1fr; }
+  .brand-panel { order: 2; padding: $spacing-xl; }
+  .auth-panel { order: 1; padding: $spacing-xl $spacing-lg; }
+}

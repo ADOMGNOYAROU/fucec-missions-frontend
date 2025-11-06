@@ -1,0 +1,47 @@
+<div class="justif-details-page">
+  <app-header [title]="'Détails justificatif'">
+    <a appBtn variant="outline" routerLink="/justificatifs">Retour</a>
+    <button appBtn variant="danger" (click)="onDelete()">Supprimer</button>
+  </app-header>
+
+  <div class="details-grid">
+    <app-card>
+      <app-card-header><h2>Informations</h2></app-card-header>
+      <app-card-body>
+        <div class="info-row"><span class="label">Fichier</span><span class="value">facture-123.pdf</span></div>
+        <div class="info-row"><span class="label">Taille</span><span class="value">245 Ko</span></div>
+        <div class="info-row"><span class="label">Mission</span><span class="value">Mission d'audit interne</span></div>
+        <div class="info-row"><span class="label">Montant</span><span class="value">120 000 FCFA</span></div>
+        <div class="info-row"><span class="label">Statut</span><span class="value"><app-badge variant="EN_ATTENTE">En attente</app-badge></span></div>
+        <div class="info-row"><span class="label">Date</span><span class="value">05/11/2025</span></div>
+      </app-card-body>
+    </app-card>
+
+    <app-card>
+      <app-card-header><h2>Aperçu</h2></app-card-header>
+      <app-card-body>
+        <div class="preview">
+          <div class="file-icon" aria-hidden="true">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div class="preview-actions">
+            <a appBtn variant="outline" href="#" download>Télécharger</a>
+          </div>
+        </div>
+      </app-card-body>
+    </app-card>
+  </div>
+
+  <app-confirmation-dialog
+    *ngIf="showDelete"
+    [title]="'Supprimer le justificatif'"
+    [message]="'Cette action est irréversible. Continuer ?'"
+    [confirmText]="'Supprimer'"
+    [cancelText]="'Annuler'"
+    (confirm)="onConfirmDelete()"
+    (cancel)="onCancelDelete()"
+  ></app-confirmation-dialog>
+</div>
