@@ -13,6 +13,7 @@ export interface User {
   prenom: string;
   email: string;
   role: UserRole;
+  managerId?: string; // ID du supérieur hiérarchique
   entite?: {
     id: string;
     nom: string;
@@ -102,7 +103,8 @@ export class AuthService {
             nom: 'Agent',
             prenom: 'Simple',
             email: 'agent@example.com',
-            role: 'AGENT'
+            role: 'AGENT',
+            managerId: '1' // Subordonné au chef d'agence
           },
           'dg.test': {
             id: '3',
@@ -143,6 +145,24 @@ export class AuthService {
             prenom: 'Services',
             email: 'responsable.copec@example.com',
             role: 'RESPONSABLE_COPEC'
+          },
+          'agent2.test': {
+            id: '8',
+            identifiant: 'agent2.test',
+            nom: 'Agent',
+            prenom: 'Deuxième',
+            email: 'agent2@example.com',
+            role: 'AGENT',
+            managerId: '1' // Aussi subordonné au chef d'agence
+          },
+          'chef.service.test': {
+            id: '9',
+            identifiant: 'chef.service.test',
+            nom: 'Chef',
+            prenom: 'Service',
+            email: 'chef.service@example.com',
+            role: 'CHEF_AGENCE',
+            managerId: '7' // Subordonné au Directeur des Services
           }
         };
 
@@ -251,6 +271,108 @@ export class AuthService {
   hasAnyRole(roles: UserRole[]): boolean {
     const userRole = this.getUserRole();
     return userRole ? roles.includes(userRole) : false;
+  }
+
+  /**
+   * Obtenir les subordonnés directs d'un utilisateur
+   */
+  getSubordinates(userId?: string): User[] {
+    const targetUserId = userId || this.getCurrentUser()?.id;
+    if (!targetUserId) return [];
+
+    const allUsers = this.getAllMockUsers();
+    return allUsers.filter(user => user.managerId === targetUserId);
+  }
+
+  /**
+   * Vérifier si un utilisateur est le manager d'un autre
+   */
+  isManagerOf(managerId: string, subordinateId: string): boolean {
+    const subordinate = this.getAllMockUsers().find(u => u.id === subordinateId);
+    return subordinate?.managerId === managerId;
+  }
+
+  /**
+   * Obtenir tous les utilisateurs mock (pour développement)
+   */
+  private getAllMockUsers(): User[] {
+    return [
+      {
+        id: '1',
+        identifiant: 'chef.agence.test',
+        nom: 'Chef',
+        prenom: 'Agence',
+        email: 'chef.agence@example.com',
+        role: 'CHEF_AGENCE'
+      },
+      {
+        id: '2',
+        identifiant: 'agent.test',
+        nom: 'Agent',
+        prenom: 'Simple',
+        email: 'agent@example.com',
+        role: 'AGENT',
+        managerId: '1' // Subordonné au chef d'agence
+      },
+      {
+        id: '3',
+        identifiant: 'dg.test',
+        nom: 'Direction',
+        prenom: 'Générale',
+        email: 'dg@example.com',
+        role: 'DG'
+      },
+      {
+        id: '4',
+        identifiant: 'rh.test',
+        nom: 'Ressources',
+        prenom: 'Humaines',
+        email: 'rh@example.com',
+        role: 'RH'
+      },
+      {
+        id: '5',
+        identifiant: 'comptable.test',
+        nom: 'Comptable',
+        prenom: 'Principal',
+        email: 'comptable@example.com',
+        role: 'COMPTABLE'
+      },
+      {
+        id: '6',
+        identifiant: 'admin.test',
+        nom: 'Administrateur',
+        prenom: 'Système',
+        email: 'admin@example.com',
+        role: 'ADMIN'
+      },
+      {
+        id: '7',
+        identifiant: 'responsable.copec.test',
+        nom: 'Directeur',
+        prenom: 'Services',
+        email: 'responsable.copec@example.com',
+        role: 'RESPONSABLE_COPEC'
+      },
+      {
+        id: '8',
+        identifiant: 'agent2.test',
+        nom: 'Agent',
+        prenom: 'Deuxième',
+        email: 'agent2@example.com',
+        role: 'AGENT',
+        managerId: '1' // Aussi subordonné au chef d'agence
+      },
+      {
+        id: '9',
+        identifiant: 'chef.service.test',
+        nom: 'Chef',
+        prenom: 'Service',
+        email: 'chef.service@example.com',
+        role: 'CHEF_AGENCE',
+        managerId: '7' // Subordonné au Directeur des Services
+      }
+    ];
   }
 
   /**

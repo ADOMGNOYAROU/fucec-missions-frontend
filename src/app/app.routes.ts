@@ -62,8 +62,7 @@ export const routes: Routes = [
       {
   path: 'validations',
   loadChildren: () => import('./features/validations/validations.routes').then(m => m.VALIDATIONS_ROUTES),
-  canActivate: [roleGuard],
-  data: { roles: ['DG', 'RH', 'CHEF_AGENCE', 'RESPONSABLE_COPEC'] }
+  canActivate: [roleGuard(['DG', 'RH', 'CHEF_AGENCE', 'RESPONSABLE_COPEC'])]
 }, 
 
       // Finance (accessible à RH, Comptabilité, DG)

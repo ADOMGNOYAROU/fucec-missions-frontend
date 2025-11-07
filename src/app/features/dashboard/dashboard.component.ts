@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService, User } from '../../core/services/auth.service';
 
 // Interfaces temporaires (en attendant les vrais services)
@@ -55,7 +55,10 @@ export class DashboardComponent implements OnInit {
   recentMissions: Mission[] = [];
   pendingValidations: Validation[] = [];
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    public authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
@@ -212,6 +215,30 @@ export class DashboardComponent implements OnInit {
       // Recharger les données
       this.loadPendingValidations();
       this.loadStats();
+    }
+  }
+
+  /**
+   * Test de navigation vers les missions
+   */
+  testNavigation(): void {
+    console.log('Dashboard: Test navigation vers /missions');
+    this.router.navigate(['/missions']).then(success => {
+      console.log('Dashboard: Navigation réussie:', success);
+    }).catch(error => {
+      console.error('Dashboard: Erreur de navigation:', error);
+    });
+  }
+
+  public isChefAgence(): boolean {
+    return this.authService.hasRole('CHEF_AGENCE');
+  }
+
+  public navigateToCreateMission(): void {
+    if (this.isChefAgence()) {
+      this.router.navigate(['/missions/create-order']);
+    } else {
+      this.router.navigate(['/missions/create']);
     }
   }
 }

@@ -32,7 +32,7 @@
           <p class="user-email">{{ currentUser?.email }}</p>
           <span class="user-role-badge">{{ getRoleLabel(currentUser?.role) }}</span>
           <div class="role-description" *ngIf="isChefAgence()">
-            <p class="role-info">Responsable de l'agence - Validation des missions et gestion d'équipe</p>
+            <p class="role-info">Chef d'Agence - Création et validation de missions</p>
           </div>
         </div>
       </div>
@@ -61,6 +61,14 @@
               <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
             <span>Tableau de Bord</span>
+          </button>
+
+          <button class="action-btn success" type="button" (click)="navigateToCreateMission()" *ngIf="canCreateMissions()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>{{ isChefAgence() ? 'Créer Ordre de Mission' : 'Nouvelle Mission' }}</span>
           </button>
 
           <button class="action-btn success" type="button" (click)="navigateToValidations()" *ngIf="canValidateMissions()">

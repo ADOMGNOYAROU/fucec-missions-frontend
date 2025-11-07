@@ -39,7 +39,7 @@
         </li>
 
         <!-- Missions -->
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="canAccessMissions()">
           <a #misRla="routerLinkActive" routerLink="/missions" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Mes Missions' : null" [attr.aria-current]="misRla.isActive ? 'page' : null" (click)="onNavClick()">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -76,7 +76,7 @@
         </li>
 
         <!-- Justificatifs -->
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="canAccessJustificatifs()">
           <a #jusRla="routerLinkActive" routerLink="/justificatifs" routerLinkActive="active" class="nav-link" [attr.title]="sidebarCollapsed ? 'Justificatifs' : null" [attr.aria-current]="jusRla.isActive ? 'page' : null" (click)="onNavClick()">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>

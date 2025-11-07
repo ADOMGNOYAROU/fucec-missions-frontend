@@ -12,15 +12,21 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   // Dev bypass - force dev login if needed (frontend only mode)
   if (environment.devAutoLogin) {
-    // Force dev user login if not already logged in
-    if (!authService.isLoggedIn()) {
-      // Check if we're in browser environment
-      if (typeof window !== 'undefined') {
+    console.log('AuthGuard: Mode dev auto-login activé');
+    // Check if we're in browser environment
+    if (typeof window !== 'undefined') {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        console.log('AuthGuard: Aucun utilisateur trouvé, connexion automatique...');
+        // Force dev user login
         const devUser = environment.devUser as any;
         localStorage.setItem('current_user', JSON.stringify(devUser));
         localStorage.setItem('access_token', 'dev');
         localStorage.setItem('refresh_token', 'dev');
         authService['currentUserSubject'].next(devUser);
+        console.log('AuthGuard: Connexion automatique réussie pour:', devUser.role);
+      } else {
+        console.log('AuthGuard: Utilisateur déjà connecté:', currentUser.role);
       }
     }
     return true;
@@ -31,6 +37,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   }
 
   // Frontend only mode - redirect to login
+  console.log('AuthGuard: Redirection vers login');
   router.navigate(['/auth/login'], {
     queryParams: { returnUrl: state.url }
   });

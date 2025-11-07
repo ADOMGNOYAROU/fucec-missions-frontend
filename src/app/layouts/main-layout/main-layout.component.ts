@@ -1,10 +1,11 @@
-import { Component, OnInit, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, HostListener, Inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AuthService, User, UserRole } from '../../core/services/auth.service';
 import { ToastContainerComponent } from '../../core/components/toast-container/toast-container.component';
 import { environment } from '../../../environments/environment';
+import { PLATFORM_ID } from '@angular/core';
 
 @Component({
   selector: 'app-main-layout',
@@ -20,6 +21,7 @@ export class MainLayoutComponent implements OnInit {
   
   currentUser: User | null = null;
   pageTitle = 'Tableau de bord';
+  private isBrowser: boolean;
   
   // Compteurs
   unreadNotifications = 3;
@@ -27,14 +29,20 @@ export class MainLayoutComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (!this.isBrowser) {
+      // Code pour le rendu côté serveur
+    }
+  }
 
   /**
    * Forcer le rechargement de l'utilisateur dev (pour le développement)
    */
   private forceDevReload(): void {
-    if (typeof window !== 'undefined') {
+    if (this.isBrowser) {
       // Vider l'ancien utilisateur
       localStorage.removeItem('current_user');
       localStorage.removeItem('access_token');
@@ -48,6 +56,8 @@ export class MainLayoutComponent implements OnInit {
         localStorage.setItem('refresh_token', 'dev');
         this.authService['currentUserSubject'].next(devUser);
       }
+    } else {
+      // Code pour le rendu côté serveur
     }
   }
 
@@ -62,6 +72,8 @@ export class MainLayoutComponent implements OnInit {
     console.log('Rôle actuel:', this.currentUser?.role);
     console.log('canValidate() called, result:', this.canValidate());
     console.log('canAccessFinance() called, result:', this.canAccessFinance());
+    console.log('canAccessMissions() called, result:', this.canAccessMissions());
+    console.log('canAccessJustificatifs() called, result:', this.canAccessJustificatifs());
     console.log('isAdmin() called, result:', this.isAdmin());
     console.log('allStaffGuard should allow access for CHEF_AGENCE');
     console.log('Sidebar collapsed:', this.sidebarCollapsed);
@@ -85,7 +97,7 @@ export class MainLayoutComponent implements OnInit {
     this.loadCounters();
     
     // Responsive: collapser automatiquement sur mobile
-    if (window.innerWidth < 768) {
+    if (this.isBrowser && window.innerWidth < 768) {
       this.sidebarCollapsed = true;
     }
   }
@@ -135,8 +147,11 @@ export class MainLayoutComponent implements OnInit {
    */
   @HostListener('window:resize', ['$event'])
   onResize(event: any): void {
-    if (event.target.innerWidth < 768) {
+    if (this.isBrowser && event.target.innerWidth < 768) {
       this.sidebarCollapsed = true;
+    } else if (!this.isBrowser) {
+      // Code pour le rendu côté serveur
+      // Ajouter le code pour gérer la taille de l'écran côté serveur
     }
   }
 
@@ -145,7 +160,7 @@ export class MainLayoutComponent implements OnInit {
    */
   onNavClick(): void {
     try {
-      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      if (this.isBrowser && window.innerWidth < 768) {
         this.sidebarCollapsed = true;
       }
     } catch {}
@@ -186,6 +201,36 @@ export class MainLayoutComponent implements OnInit {
     // Pour le moment, valeurs fictives
     this.unreadNotifications = 3;
     this.pendingValidations = 5;
+  }
+
+  /**
+   * Vérifier si l'utilisateur peut accéder aux missions
+   */
+  canAccessMissions(): boolean {
+    return this.authService.hasAnyRole([
+      'AGENT' as UserRole,
+      'CHEF_AGENCE' as UserRole,
+      'RESPONSABLE_COPEC' as UserRole,
+      'DG' as UserRole,
+      'RH' as UserRole,
+      'COMPTABLE' as UserRole,
+      'ADMIN' as UserRole
+    ]);
+  }
+
+  /**
+   * Vérifier si l'utilisateur peut accéder aux justificatifs
+   */
+  canAccessJustificatifs(): boolean {
+    return this.authService.hasAnyRole([
+      'AGENT' as UserRole,
+      'CHEF_AGENCE' as UserRole,
+      'RESPONSABLE_COPEC' as UserRole,
+      'DG' as UserRole,
+      'RH' as UserRole,
+      'COMPTABLE' as UserRole,
+      'ADMIN' as UserRole
+    ]);
   }
 
   /**

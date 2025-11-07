@@ -1,0 +1,165 @@
+<div class="order-mission-create-page">
+  <div class="page-header">
+    <h1>Créer un Ordre de Mission</h1>
+    <div class="actions">
+      <button type="button" appBtn variant="outline" routerLink="/missions">Retour</button>
+    </div>
+  </div>
+
+  <div class="form-container">
+    <form [formGroup]="orderForm" (ngSubmit)="confirmSubmit()" class="order-form">
+
+      <!-- Informations générales -->
+      <div class="form-section">
+        <h3>Informations Générales</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="titre">Titre de la mission *</label>
+            <input
+              type="text"
+              id="titre"
+              formControlName="titre"
+              placeholder="Titre descriptif de la mission"
+              class="form-control"
+              [class.error]="orderForm.get('titre')?.invalid && orderForm.get('titre')?.touched">
+            <div class="error-message" *ngIf="orderForm.get('titre')?.invalid && orderForm.get('titre')?.touched">
+              <span *ngIf="orderForm.get('titre')?.errors?.['required']">Le titre est requis</span>
+              <span *ngIf="orderForm.get('titre')?.errors?.['minlength']">Le titre doit contenir au moins 3 caractères</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="motifMission">Motif de la mission *</label>
+            <select
+              id="motifMission"
+              formControlName="motifMission"
+              class="form-control"
+              [class.error]="orderForm.get('motifMission')?.invalid && orderForm.get('motifMission')?.touched">
+              <option value="">Sélectionner un motif</option>
+              <option value="FORMATION">Formation</option>
+              <option value="REUNION">Réunion</option>
+              <option value="AUDIT">Audit</option>
+              <option value="VISITE">Visite</option>
+              <option value="MISSION_OFFICIELLE">Mission officielle</option>
+              <option value="AUTRE">Autre</option>
+            </select>
+            <div class="error-message" *ngIf="orderForm.get('motifMission')?.invalid && orderForm.get('motifMission')?.touched">
+              <span *ngIf="orderForm.get('motifMission')?.errors?.['required']">Le motif est requis</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description *</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            placeholder="Description détaillée de la mission"
+            rows="4"
+            class="form-control"
+            [class.error]="orderForm.get('description')?.invalid && orderForm.get('description')?.touched">
+          </textarea>
+          <div class="error-message" *ngIf="orderForm.get('description')?.invalid && orderForm.get('description')?.touched">
+            <span *ngIf="orderForm.get('description')?.errors?.['required']">La description est requise</span>
+            <span *ngIf="orderForm.get('description')?.errors?.['minlength']">La description doit contenir au moins 5 caractères</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dates et lieu -->
+      <div class="form-section">
+        <h3>Dates et Lieu</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dateDebut">Date de début *</label>
+            <input
+              type="date"
+              id="dateDebut"
+              formControlName="dateDebut"
+              class="form-control"
+              [class.error]="orderForm.get('dateDebut')?.invalid && orderForm.get('dateDebut')?.touched"
+              [min]="getTodayDateString()"
+              (input)="onDateInput($event)"
+              (change)="onDateInput($event)">
+            <div class="error-message" *ngIf="orderForm.get('dateDebut')?.invalid && orderForm.get('dateDebut')?.touched">
+              <span *ngIf="orderForm.get('dateDebut')?.errors?.['required']">La date de début est requise</span>
+              <span *ngIf="orderForm.get('dateDebut')?.errors?.['dateDebutPast']">La date de départ ne peut pas être antérieure à la date du jour</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="dateFin">Date de fin *</label>
+            <input
+              type="date"
+              id="dateFin"
+              formControlName="dateFin"
+              class="form-control"
+              [class.error]="orderForm.get('dateFin')?.invalid && orderForm.get('dateFin')?.touched">
+            <div class="error-message" *ngIf="orderForm.get('dateFin')?.invalid && orderForm.get('dateFin')?.touched">
+              <span *ngIf="orderForm.get('dateFin')?.errors?.['required']">La date de fin est requise</span>
+            </div>
+            <div class="duration-info" *ngIf="calculerDuree() > 0">
+              Durée : {{ calculerDuree() }} jour(s)
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="lieuMission">Lieu de la mission *</label>
+          <input
+            type="text"
+            id="lieuMission"
+            formControlName="lieuMission"
+            placeholder="Ville, pays ou adresse complète"
+            class="form-control"
+            [class.error]="orderForm.get('lieuMission')?.invalid && orderForm.get('lieuMission')?.touched">
+          <div class="error-message" *ngIf="orderForm.get('lieuMission')?.invalid && orderForm.get('lieuMission')?.touched">
+            <span *ngIf="orderForm.get('lieuMission')?.errors?.['required']">Le lieu est requis</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Budget -->
+      <div class="form-section">
+        <h3>Budget Estimé</h3>
+
+        <div class="form-group">
+          <label for="budgetEstime">Budget estimé (FCFA) *</label>
+          <input
+            type="number"
+            id="budgetEstime"
+            formControlName="budgetEstime"
+            min="1"
+            step="1"
+            placeholder="Montant en FCFA"
+            class="form-control"
+            [class.error]="orderForm.get('budgetEstime')?.invalid && orderForm.get('budgetEstime')?.touched">
+          <div class="error-message" *ngIf="orderForm.get('budgetEstime')?.invalid && orderForm.get('budgetEstime')?.touched">
+            <span *ngIf="orderForm.get('budgetEstime')?.errors?.['required']">Le budget est requis</span>
+            <span *ngIf="orderForm.get('budgetEstime')?.errors?.['min']">Le budget doit être supérieur à 0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Erreurs globales -->
+      <div class="global-errors" *ngIf="orderForm.errors">
+        <div class="error-message" *ngIf="orderForm.errors?.['dateInvalid']">
+          La date de fin doit être postérieure ou égale à la date de début
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" appBtn variant="outline" routerLink="/missions">
+          Annuler
+        </button>
+        <button type="submit" appBtn variant="primary" [disabled]="submitting">
+          <span *ngIf="submitting">Création en cours...</span>
+          <span *ngIf="!submitting">Créer l'Ordre de Mission</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

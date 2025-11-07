@@ -4,24 +4,37 @@ import { AuthService, UserRole } from '../services/auth.service';
 
 /**
  * Factory pour créer un guard basé sur les rôles
+ * Vérifie si l'utilisateur possède un ou plusieurs rôles requis
  */
-export function roleGuard(allowedRoles: UserRole[]): CanActivateFn {
+export function roleGuard(requiredRoles: UserRole[]): CanActivateFn {
   return (route, state) => {
     const authService = inject(AuthService);
     const router = inject(Router);
 
     // Vérifier si l'utilisateur est connecté
     if (!authService.isLoggedIn()) {
-      router.navigate(['/auth/login']);
+      console.log('RoleGuard: Utilisateur non connecté - laisser authGuard gérer la connexion automatique');
+      // Ne pas rediriger ici, laisser authGuard faire la connexion automatique
+      return true;
+    }
+
+    // Vérifier si l'utilisateur a un des rôles requis
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) {
+      console.log('RoleGuard: Aucun utilisateur trouvé');
       return false;
     }
 
-    // Vérifier si l'utilisateur a le bon rôle
-    if (authService.hasAnyRole(allowedRoles)) {
+    // Utiliser la méthode hasAnyRole du service
+    const hasRequiredRole = authService.hasAnyRole(requiredRoles);
+
+    if (hasRequiredRole) {
+      console.log(`RoleGuard: Accès autorisé pour rôle ${currentUser.role} (rôles requis: ${requiredRoles.join(', ')})`);
       return true;
     }
 
     // Rediriger vers une page d'accès refusé ou dashboard
+    console.log(`RoleGuard: Accès refusé pour rôle ${currentUser.role} (rôles requis: ${requiredRoles.join(', ')})`);
     router.navigate(['/acces-refuse']);
     return false;
   };
@@ -49,12 +62,6 @@ export const validateurGuard: CanActivateFn = roleGuard([
   'CHEF_AGENCE',
   'RESPONSABLE_COPEC',
   'DG'
-]);
-
-// Guard commun pour Chef d'Agence et Directeur de Service
-export const chefResponsableGuard: CanActivateFn = roleGuard([
-  'CHEF_AGENCE',
-  'RESPONSABLE_COPEC'
 ]);
 
 export const financeGuard: CanActivateFn = roleGuard([

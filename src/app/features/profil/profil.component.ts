@@ -17,6 +17,10 @@ export class ProfilComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
+    console.log('ProfilComponent - Utilisateur connecté:', this.currentUser);
+    console.log('ProfilComponent - Rôle:', this.currentUser?.role);
+    console.log('ProfilComponent - isAgent():', this.isAgent());
+    console.log('ProfilComponent - canCreateMissions():', this.canCreateMissions());
   }
 
   navigateToMissions(): void {
@@ -46,6 +50,24 @@ export class ProfilComponent implements OnInit {
     });
   }
 
+  navigateToCreateMission(): void {
+    if (this.authService.hasRole('CHEF_AGENCE')) {
+      console.log('Navigation vers /missions/create-order (Chef de Service)');
+      this.router.navigate(['/missions/create-order']).then(success => {
+        console.log('Navigation réussie:', success);
+      }).catch(error => {
+        console.error('Erreur de navigation:', error);
+      });
+    } else {
+      console.log('Navigation vers /missions/create');
+      this.router.navigate(['/missions/create']).then(success => {
+        console.log('Navigation réussie:', success);
+      }).catch(error => {
+        console.error('Erreur de navigation:', error);
+      });
+    }
+  }
+
   navigateToJustificatifs(): void {
     console.log('Navigation vers /justificatifs');
     this.router.navigate(['/justificatifs']).then(success => {
@@ -73,6 +95,12 @@ export class ProfilComponent implements OnInit {
     return labels[key] ?? 'Utilisateur';
   }
 
+  canCreateMissions(): boolean {
+    const result = this.currentUser?.role !== 'CHAUFFEUR';
+    console.log('canCreateMissions() appelé pour rôle:', this.currentUser?.role, 'résultat:', result);
+    return result;
+  }
+
   canValidateMissions(): boolean {
     if (!this.currentUser?.role) return false;
     return ['CHEF_AGENCE', 'RESPONSABLE_COPEC', 'DG', 'RH'].includes(this.currentUser.role);
@@ -87,6 +115,10 @@ export class ProfilComponent implements OnInit {
   canAccessFinance(): boolean {
     if (!this.currentUser?.role) return false;
     return ['RH', 'COMPTABLE', 'DG', 'DIRECTEUR_FINANCES'].includes(this.currentUser.role);
+  }
+
+  isAgent(): boolean {
+    return this.currentUser?.role === 'AGENT';
   }
 
   isChefAgence(): boolean {

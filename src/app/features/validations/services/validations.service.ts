@@ -14,6 +14,7 @@ export interface ValidationItem {
   createdAt: string;
   currentValidator: string;
   nextValidator?: string;
+  urgent?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -56,7 +57,8 @@ export class ValidationsService {
           status: 'EN_ATTENTE',
           createdAt: '2025-01-14',
           currentValidator: 'Chef Agence',
-          nextValidator: 'Directeur des Services'
+          nextValidator: 'Directeur des Services',
+          urgent: true
         }
       ];
     } else if (userRole === 'RESPONSABLE_COPEC') {

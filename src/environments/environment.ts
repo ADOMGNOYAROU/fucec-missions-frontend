@@ -24,11 +24,11 @@ export const environment = {
   // Dev helpers
   devAutoLogin: true,
   devUser: {
-    id: 'dev-chef-agence',
-    identifiant: 'chef.agence.test',
-    nom: 'Dupont',
-    prenom: 'Jean',
-    email: 'chef.agence@example.com',
-    role: 'CHEF_AGENCE',
+    id: '4',
+    identifiant: 'rh.test',
+    nom: 'Ressources',
+    prenom: 'Humaines',
+    email: 'rh@example.com',
+    role: 'RH'
   }
 };

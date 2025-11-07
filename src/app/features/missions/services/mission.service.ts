@@ -46,7 +46,7 @@ export class MissionService {
   }
 
   list(params?: any): Observable<any> {
-    // Mode mock - retourner une liste de missions fictives
+    // Mode mock - retourner une liste de missions fictives selon la hiérarchie
     const mockMissions = {
       data: [
         {
@@ -58,9 +58,9 @@ export class MissionService {
           location: 'Lomé',
           amount: 250000,
           creator: {
-            id: 1,
+            id: 2,
             nom: 'Agent',
-            prenom: 'Test'
+            prenom: 'Simple'
           }
         },
         {
@@ -72,9 +72,9 @@ export class MissionService {
           location: 'Kara',
           amount: 180000,
           creator: {
-            id: 1,
+            id: 2,
             nom: 'Agent',
-            prenom: 'Test'
+            prenom: 'Simple'
           }
         },
         {
@@ -87,20 +87,49 @@ export class MissionService {
           amount: 320000,
           creator: {
             id: 1,
+            nom: 'Chef',
+            prenom: 'Agence'
+          }
+        },
+        {
+          id: 4,
+          title: 'Mission commerciale',
+          description: 'Développement commercial',
+          status: 'BROUILLON',
+          date: '2025-11-20',
+          location: 'Dapaong',
+          amount: 150000,
+          creator: {
+            id: 8,
             nom: 'Agent',
-            prenom: 'Test'
+            prenom: 'Deuxième'
+          }
+        },
+        {
+          id: 5,
+          title: 'Formation équipe',
+          description: 'Formation en management',
+          status: 'EN_ATTENTE',
+          date: '2025-11-12',
+          location: 'Lomé',
+          amount: 400000,
+          creator: {
+            id: 9,
+            nom: 'Chef',
+            prenom: 'Service'
           }
         }
       ],
       pagination: {
-        total: 3,
+        total: 5,
         page: 1,
         limit: 10,
         totalPages: 1
       },
-      total: 3
+      total: 5
     };
 
+    // Simuler un délai réseau
     return of(mockMissions).pipe(delay(300));
   }
 

@@ -10,7 +10,7 @@
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
       </svg>
-      Nouvelle Mission
+      {{ authService.hasRole('CHEF_AGENCE') ? 'Créer Ordre de Mission' : 'Nouvelle Mission' }}
     </button>
   </div>
 
@@ -171,16 +171,11 @@
     </div>
   </div>
 
-  <!-- Quick Actions -->
   <div class="quick-actions">
     <h2>Actions Rapides</h2>
     <div class="actions-grid">
-      <button class="action-card" routerLink="/missions/create">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span>Créer une Mission</span>
+      <button (click)="navigateToCreateMission()">
+        {{ isChefAgence() ? 'Créer Ordre de Mission' : 'Nouvelle Mission' }}
       </button>
 
       <button class="action-card" routerLink="/missions">
@@ -198,6 +193,14 @@
         </svg>
         <span>Déposer Justificatifs</span>
         <span class="badge">{{ stats.justificatifsEnAttente }}</span>
+      </button>
+
+      <button class="action-card" (click)="testNavigation()">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Test Missions</span>
       </button>
 
       <button class="action-card" routerLink="/profil">

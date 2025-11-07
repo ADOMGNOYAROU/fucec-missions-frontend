@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
+import { roleGuard } from '../../core/guards/role.guard';
 
 export const MISSIONS_ROUTES: Routes = [
   {
@@ -13,6 +14,13 @@ export const MISSIONS_ROUTES: Routes = [
     loadComponent: () => import('./mission-create/mission-create.component')
       .then(m => m.MissionCreateComponent),
     canActivate: [authGuard]
+  },
+  {
+    path: 'create-order',
+    loadComponent: () => import('./order-mission-create/order-mission-create.component')
+      .then(m => m.OrderMissionCreateComponent),
+    canActivate: [authGuard, roleGuard(['CHEF_AGENCE'])],
+    data: { requiresAuth: true }
   },
   {
     path: ':id',

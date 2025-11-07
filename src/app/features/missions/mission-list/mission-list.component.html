@@ -1,25 +1,26 @@
 <div class="missions-list-page">
   <div class="page-header">
-    <h1>Mes Missions</h1>
-    <div class="actions">
-      <a appBtn variant="primary" routerLink="/missions/create">Créer une Mission</a>
+    <h1>{{ getPageTitle() }}</h1>
+    <div class="actions" *ngIf="canCreate">
+      <a appBtn variant="primary" routerLink="/missions/create">{{ getCreateButtonText() }}</a>
     </div>
   </div>
 
   <div class="filters">
     <div class="filter-group">
       <label>Statut</label>
-      <select class="form-control">
+      <select class="form-control" [(ngModel)]="statusFilter" (change)="onStatusFilterChange()">
         <option value="">Tous</option>
-        <option>En cours</option>
-        <option>En attente</option>
-        <option>Validée</option>
-        <option>Rejetée</option>
+        <option value="EN_ATTENTE">En attente</option>
+        <option value="VALIDEE">Validée</option>
+        <option value="EN_COURS">En cours</option>
+        <option value="REJETEE">Rejetée</option>
+        <option value="BROUILLON">Brouillon</option>
       </select>
     </div>
     <div class="filter-group">
       <label>Recherche</label>
-      <input type="text" class="form-control" placeholder="Rechercher une mission..." />
+      <input type="text" class="form-control" placeholder="Titre ou lieu..." [(ngModel)]="searchFilter" (input)="onSearchFilterChange()" />
     </div>
   </div>
 
@@ -31,12 +32,13 @@
       <span>Date</span>
       <span>Lieu</span>
       <span>Statut</span>
-      <span></span>
+      <span *ngIf="isChefAgence">Créateur</span>
+      <span>Actions</span>
     </div>
 
     <!-- Liste des missions -->
-    <ng-container *ngIf="missions.length > 0; else noMissions">
-      <div class="list-item" *ngFor="let mission of missions">
+    <ng-container *ngIf="filteredMissions.length > 0; else noMissions">
+      <div class="list-item" *ngFor="let mission of filteredMissions">
         <div class="col title">{{ mission.title }}</div>
         <div class="col">{{ mission.date | date:'dd/MM/yyyy' }}</div>
         <div class="col">{{ mission.location }}</div>
@@ -45,8 +47,48 @@
             {{ getStatusLabel(mission.status) }}
           </app-badge>
         </div>
+        <div class="col" *ngIf="isChefAgence">
+          {{ mission.creator?.prenom }} {{ mission.creator?.nom }}
+        </div>
         <div class="col actions">
-          <a appBtn variant="outline" [routerLink]="['/missions', mission.id]">Détails</a>
+          <!-- Actions selon les permissions -->
+          <ng-container *ngIf="getValidationActions(mission) as actions">
+            <a appBtn variant="outline" [routerLink]="['/missions', mission.id]" title="Voir détails">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </a>
+            
+            <button appBtn variant="primary" 
+                    *ngIf="actions.canValidate" 
+                    (click)="validateMission(mission.id, 'VALIDEE')"
+                    title="Valider">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+            
+            <button appBtn variant="danger" 
+                    *ngIf="actions.canValidate" 
+                    (click)="validateMission(mission.id, 'REJETEE')"
+                    title="Rejeter">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            
+            <a appBtn variant="secondary" 
+               *ngIf="actions.canEdit" 
+               [routerLink]="['/missions', mission.id, 'edit']"
+               title="Modifier">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </a>
+          </ng-container>
         </div>
       </div>
     </ng-container>
