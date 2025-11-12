@@ -15,6 +15,6 @@ export const appConfig: ApplicationConfig = {
       withFetch(),
       withInterceptors([authInterceptor, errorInterceptor])
     ),
-    provideAnimations(),
+    provideAnimations()
   ]
 };

@@ -51,7 +51,7 @@ export class ProfilComponent implements OnInit {
   }
 
   navigateToCreateMission(): void {
-    if (this.authService.hasRole('CHEF_AGENCE')) {
+    if (this.authService.hasRole(UserRole.CHEF_AGENCE)) {
       console.log('Navigation vers /missions/create-order (Chef de Service)');
       this.router.navigate(['/missions/create-order']).then(success => {
         console.log('Navigation réussie:', success);
@@ -96,14 +96,14 @@ export class ProfilComponent implements OnInit {
   }
 
   canCreateMissions(): boolean {
-    const result = this.currentUser?.role !== 'CHAUFFEUR';
+    const result = this.currentUser?.role !== UserRole.CHAUFFEUR;
     console.log('canCreateMissions() appelé pour rôle:', this.currentUser?.role, 'résultat:', result);
     return result;
   }
 
   canValidateMissions(): boolean {
     if (!this.currentUser?.role) return false;
-    return ['CHEF_AGENCE', 'RESPONSABLE_COPEC', 'DG', 'RH'].includes(this.currentUser.role);
+    return [UserRole.CHEF_AGENCE, UserRole.RESPONSABLE_COPEC, UserRole.DG, UserRole.RH].includes(this.currentUser.role);
   }
 
   canAccessJustificatifs(): boolean {
@@ -114,14 +114,14 @@ export class ProfilComponent implements OnInit {
 
   canAccessFinance(): boolean {
     if (!this.currentUser?.role) return false;
-    return ['RH', 'COMPTABLE', 'DG', 'DIRECTEUR_FINANCES'].includes(this.currentUser.role);
+    return [UserRole.RH, UserRole.COMPTABLE, UserRole.DG, UserRole.DIRECTEUR_FINANCES].includes(this.currentUser.role);
   }
 
   isAgent(): boolean {
-    return this.currentUser?.role === 'AGENT';
+    return this.currentUser?.role === UserRole.AGENT;
   }
 
   isChefAgence(): boolean {
-    return this.currentUser?.role === 'CHEF_AGENCE';
+    return this.currentUser?.role === UserRole.CHEF_AGENCE;
   }
 }

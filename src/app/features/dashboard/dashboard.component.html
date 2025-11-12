@@ -2,7 +2,7 @@
   <!-- Welcome Section -->
   <div class="welcome-section">
     <div class="welcome-content">
-      <h1>Bienvenue, {{ currentUser?.prenom }} ! 👋</h1>
+      <h1>Bienvenue, {{ currentUser?.first_name }} ! 👋</h1>
       <p>Voici un aperçu de vos missions et activités récentes</p>
     </div>
     <button class="btn btn-primary" routerLink="/missions/create">
@@ -10,7 +10,7 @@
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
       </svg>
-      {{ authService.hasRole('CHEF_AGENCE') ? 'Créer Ordre de Mission' : 'Nouvelle Mission' }}
+      {{ isChefAgence() ? 'Créer Ordre de Mission' : 'Nouvelle Mission' }}
     </button>
   </div>
 
@@ -137,7 +137,7 @@
             <div class="validation-info">
               <div class="validation-title">{{ validation.mission.titre }}</div>
               <div class="validation-meta">
-                <span class="validation-user">Par: {{ validation.mission.createur.prenom }} {{ validation.mission.createur.nom }}</span>
+                <span class="validation-user">Par: {{ validation.mission.createur.first_name }} {{ validation.mission.createur.last_name }}</span>
                 <span class="validation-level" [class.urgent]="validation.enRetard">
                   {{ getNiveauLabel(validation.niveau) }}
                 </span>

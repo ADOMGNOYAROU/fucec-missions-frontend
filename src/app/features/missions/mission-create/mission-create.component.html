@@ -166,10 +166,10 @@
         <!-- Agent créateur (automatique) -->
         <div class="participant-item creator">
           <div class="participant-avatar">
-            {{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}
+            {{ currentUser?.first_name?.charAt(0) }}{{ currentUser?.last_name?.charAt(0) }}
           </div>
           <div class="participant-info">
-            <div class="participant-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</div>
+            <div class="participant-name">{{ currentUser?.first_name }} {{ currentUser?.last_name }}</div>
             <div class="participant-role">{{ getRoleLabel(currentUser?.role) }} - Créateur</div>
           </div>
           <span class="badge-creator">Vous</span>
@@ -178,10 +178,10 @@
         <!-- Participants ajoutés -->
         <div class="participant-item" *ngFor="let participant of selectedParticipants; let i = index">
           <div class="participant-avatar">
-            {{ participant.prenom.charAt(0) }}{{ participant.nom.charAt(0) }}
+            {{ participant.first_name.charAt(0) }}{{ participant.last_name.charAt(0) }}
           </div>
           <div class="participant-info">
-            <div class="participant-name">{{ participant.prenom }} {{ participant.nom }}</div>
+            <div class="participant-name">{{ participant.first_name }} {{ participant.last_name }}</div>
             <div class="participant-role">{{ getRoleLabel(participant.role) }}</div>
           </div>
           <button type="button" class="btn-remove" (click)="removeParticipant(i)">
@@ -235,7 +235,7 @@
           <select id="chauffeur" formControlName="chauffeurId" class="form-control">
             <option value="">Sélectionnez un chauffeur</option>
             <option *ngFor="let chauffeur of chauffeurs" [value]="chauffeur.id">
-              {{ chauffeur.prenom }} {{ chauffeur.nom }}
+              {{ chauffeur.first_name }} {{ chauffeur.last_name }}
             </option>
           </select>
         </div>

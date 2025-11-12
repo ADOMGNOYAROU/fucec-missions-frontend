@@ -86,6 +86,16 @@
           </div>
         </div>
 
+        <!-- Test Connectivity Button -->
+        <button type="button" class="btn-test" (click)="testConnectivity()">
+          TESTER LA CONNEXION SERVEUR
+        </button>
+
+        <!-- Debug Connection Button -->
+        <button type="button" class="btn-debug" (click)="debugConnection()">
+          DEBUG ÉTAT CONNEXION
+        </button>
+
         <!-- Submit Button -->
         <button type="submit" class="btn-submit" [disabled]="loading || loginForm.invalid">
           <span *ngIf="!loading">SE CONNECTER</span>

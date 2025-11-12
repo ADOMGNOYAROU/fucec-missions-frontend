@@ -6,18 +6,25 @@ import { BtnDirective } from '../../../shared/components/button/btn.directive';
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 import { BadgeComponent } from '../../../shared/components/badge/badge.component';
 import { MissionService } from '../services/mission.service';
-import { AuthService, User } from '../../../core/services/auth.service';
+import { AuthService, User, ValidationDecision } from '../../../core/services/auth.service';
 
 interface Mission {
   id: number;
-  title: string;
+  titre: string;
+  description: string;
   status: string;
-  date: string;
-  location: string;
-  creator?: {
-    prenom: string;
+  date_debut: string;
+  date_fin: string;
+  lieu_mission: string;
+  budget_prevu: number;
+  createur: {
+    id: number;
     nom: string;
+    prenom: string;
+    get_full_name: string;
   };
+  intervenants_count: number;
+  duree: number;
 }
 
 @Component({
@@ -71,11 +78,9 @@ export class MissionListComponent implements OnInit {
     this.missionService.list().subscribe({
       next: (response: any) => {
         console.log('MissionListComponent: Missions reçues:', response);
-        const allMissions = response?.data || [];
-        
-        // Filtrer les missions selon la hiérarchie
-        this.missions = this.filterMissionsByHierarchy(allMissions);
-        
+        // Le backend retourne directement la liste des missions filtrée
+        this.missions = response || [];
+
         this.applyFilters();
         console.log('MissionListComponent: Missions filtrées:', this.filteredMissions);
         this.loading = false;
@@ -89,44 +94,13 @@ export class MissionListComponent implements OnInit {
     });
   }
 
-  /**
-   * Filtrer les missions selon la hiérarchie organisationnelle
-   * Un chef de service voit ses propres missions + celles de ses subordonnés (N-1)
-   */
-  filterMissionsByHierarchy(allMissions: any[]): any[] {
-    if (!this.currentUser) return allMissions;
-
-    // Si c'est un admin ou DG, voir toutes les missions
-    if (['ADMIN', 'DG', 'RH', 'COMPTABLE'].includes(this.currentUser.role)) {
-      return allMissions;
-    }
-
-    // Si c'est un chef de service, voir ses missions + celles de ses subordonnés
-    if (this.currentUser.role === 'CHEF_AGENCE') {
-      const subordinates = this.authService.getSubordinates(this.currentUser.id);
-      const subordinateIds = subordinates.map(sub => sub.id);
-      
-      return allMissions.filter(mission => 
-        mission.creator?.id === this.currentUser!.id || // Ses propres missions
-        subordinateIds.includes(mission.creator?.id) // Missions de ses subordonnés
-      );
-    }
-
-    // Si c'est un agent simple, voir seulement ses propres missions
-    if (this.currentUser.role === 'AGENT') {
-      return allMissions.filter(mission => mission.creator?.id === this.currentUser!.id);
-    }
-
-    // Par défaut, retourner toutes les missions
-    return allMissions;
-  }
-
   applyFilters(): void {
     this.filteredMissions = this.missions.filter(mission => {
       const matchesStatus = !this.statusFilter || mission.status === this.statusFilter;
-      const matchesSearch = !this.searchFilter || 
-        mission.title.toLowerCase().includes(this.searchFilter.toLowerCase()) ||
-        mission.location.toLowerCase().includes(this.searchFilter.toLowerCase());
+      const matchesSearch = !this.searchFilter ||
+        mission.titre.toLowerCase().includes(this.searchFilter.toLowerCase()) ||
+        mission.lieu_mission.toLowerCase().includes(this.searchFilter.toLowerCase()) ||
+        mission.description.toLowerCase().includes(this.searchFilter.toLowerCase());
       return matchesStatus && matchesSearch;
     });
   }
@@ -139,27 +113,124 @@ export class MissionListComponent implements OnInit {
     this.applyFilters();
   }
 
-  validateMission(missionId: number, decision: 'VALIDEE' | 'REJETEE'): void {
+  validateMission(missionId: number, decision: ValidationDecision, commentaire?: string): void {
     if (!this.canValidate) return;
 
-    const message = decision === 'VALIDEE' 
-      ? 'Voulez-vous valider cette mission ?' 
-      : 'Voulez-vous rejeter cette mission ?';
+    let message = '';
+    switch (decision) {
+      case 'VISER':
+        message = 'Voulez-vous viser cette mission ?';
+        break;
+      case 'VALIDER':
+        message = 'Voulez-vous valider cette mission ?';
+        break;
+      case 'APPROUVER':
+        message = 'Voulez-vous approuver définitivement cette mission ?';
+        break;
+      case 'REJETER':
+        message = 'Voulez-vous rejeter cette mission ?';
+        break;
+      case 'REPORTER':
+        message = 'Voulez-vous reporter cette mission ?';
+        break;
+      default:
+        message = `Voulez-vous ${(decision as string).toLowerCase()} cette mission ?`;
+    }
 
     if (confirm(message)) {
       console.log(`Validation de la mission ${missionId}: ${decision}`);
-      // TODO: Appeler l'API de validation
-      // Recharger la liste après validation
-      this.loadMissions();
+
+      this.missionService.validateMission(missionId, decision, commentaire).subscribe({
+        next: (response) => {
+          console.log('Mission traitée:', response);
+          // Recharger la liste après validation
+          this.loadMissions();
+        },
+        error: (error) => {
+          console.error('Erreur lors du traitement:', error);
+          alert('Erreur lors du traitement de la mission');
+        }
+      });
     }
   }
 
-  getValidationActions(mission: Mission): { canValidate: boolean, canEdit: boolean, canView: boolean } {
+  getValidationActions(mission: Mission): { canValidate: boolean, canEdit: boolean, canView: boolean, availableActions: ValidationDecision[] } {
     const canValidate = this.canValidate && mission.status === 'EN_ATTENTE';
     const canEdit = this.canCreate && (this.isChefAgence || mission.status === 'BROUILLON');
     const canView = true; // Tout le monde peut voir les détails
     
-    return { canValidate, canEdit, canView };
+    let availableActions: ValidationDecision[] = [];
+    
+    if (canValidate && this.currentUser?.role) {
+      switch (this.currentUser.role) {
+        case 'CHEF_AGENCE':
+          // N+1 peut : VISER, REJETER, REPORTER
+          availableActions = ['VISER', 'REJETER', 'REPORTER'];
+          break;
+        case 'RESPONSABLE_COPEC':
+          // N+2 peut : VALIDER, REJETER, REPORTER  
+          availableActions = ['VALIDER', 'REJETER', 'REPORTER'];
+          break;
+        case 'DG':
+          // DGA/DG peut : APPROUVER, REJETER, REPORTER
+          availableActions = ['APPROUVER', 'REJETER', 'REPORTER'];
+          break;
+        default:
+          availableActions = [];
+      }
+    }
+    
+    return { canValidate, canEdit, canView, availableActions };
+  }
+
+  // Méthodes utilitaires pour les actions
+  getActionVariant(action: ValidationDecision): 'primary' | 'secondary' | 'danger' | 'outline' {
+    switch (action) {
+      case 'VISER':
+      case 'VALIDER':
+      case 'APPROUVER':
+        return 'primary';
+      case 'REJETER':
+        return 'danger';
+      case 'REPORTER':
+        return 'secondary';
+      default:
+        return 'secondary';
+    }
+  }
+
+  getActionTitle(action: ValidationDecision): string {
+    switch (action) {
+      case 'VISER':
+        return 'Viser cette mission';
+      case 'VALIDER':
+        return 'Valider cette mission';
+      case 'APPROUVER':
+        return 'Approuver définitivement cette mission';
+      case 'REJETER':
+        return 'Rejeter cette mission';
+      case 'REPORTER':
+        return 'Reporter cette mission';
+      default:
+        return action;
+    }
+  }
+
+  getActionLabel(action: ValidationDecision): string {
+    switch (action) {
+      case 'VISER':
+        return 'Viser';
+      case 'VALIDER':
+        return 'Valider';
+      case 'APPROUVER':
+        return 'Approuver';
+      case 'REJETER':
+        return 'Rejeter';
+      case 'REPORTER':
+        return 'Reporter';
+      default:
+        return action;
+    }
   }
 
   getPageTitle(): string {
@@ -168,19 +239,6 @@ export class MissionListComponent implements OnInit {
 
   getCreateButtonText(): string {
     return 'Créer une Mission';
-  }
-
-  // Getters pour les statistiques
-  get totalMissions(): number {
-    return this.missions.length;
-  }
-
-  get missionsEnAttente(): number {
-    return this.missions.filter(m => m.status === 'EN_ATTENTE').length;
-  }
-
-  get missionsValidees(): number {
-    return this.missions.filter(m => m.status === 'VALIDEE').length;
   }
 
   getStatusClass(status: string): 'BROUILLON' | 'EN_ATTENTE' | 'VALIDEE' | 'IN_PROGRESS' | 'CLOTUREE' | 'REJETEE' {

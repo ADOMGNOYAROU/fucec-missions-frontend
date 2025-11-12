@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService, UserRole } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -21,46 +22,12 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
     this.initForm();
-
-    // Force dev auto-login if enabled and not logged in
-    if (this.authService && typeof window !== 'undefined') {
-      if (environment.devAutoLogin && !this.authService.isLoggedIn()) {
-        const devUser = environment.devUser as any;
-        localStorage.setItem('current_user', JSON.stringify(devUser));
-        localStorage.setItem('access_token', 'dev');
-        localStorage.setItem('refresh_token', 'dev');
-        this.authService['currentUserSubject'].next(devUser);
-
-        // Redirect based on role
-        switch (devUser.role) {
-          case 'AGENT':
-            this.router.navigate(['/missions']);
-            return;
-          case 'CHEF_AGENCE':
-            this.router.navigate(['/dashboard']); // Dashboard pour voir tous les éléments
-            return;
-          case 'RESPONSABLE_COPEC':
-            this.router.navigate(['/dashboard']); // Même accès que CHEF_AGENCE
-            return;
-          case 'DG':
-          case 'RH':
-          case 'COMPTABLE':
-            this.router.navigate(['/dashboard']);
-            return;
-          case 'ADMIN':
-            this.router.navigate(['/admin']);
-            return;
-          default:
-            this.router.navigate(['/dashboard']);
-            return;
-        }
-      }
-    }
 
     // Si déjà connecté, rediriger vers dashboard
     if (this.authService.isLoggedIn()) {
@@ -91,27 +58,23 @@ export class LoginComponent implements OnInit {
     const { identifiant, motDePasse } = this.loginForm.value;
 
     this.authService.login(identifiant, motDePasse).subscribe({
-      next: (response) => {
-        // Succès - Redirection selon le rôle
+      next: () => {
         this.loading = false;
-        const userRole = response.user.role;
+        const userRole = this.authService.getUserRole();
         
         switch (userRole) {
-          case 'AGENT':
+          case UserRole.AGENT:
             this.router.navigate(['/missions']);
             break;
-          case 'CHEF_AGENCE':
-            this.router.navigate(['/dashboard']); // Dashboard pour voir tous les éléments
-            break;
-          case 'RESPONSABLE_COPEC':
-            this.router.navigate(['/dashboard']); // Même accès que CHEF_AGENCE
-            break;
-          case 'DG':
-          case 'RH':
-          case 'COMPTABLE':
+          case UserRole.CHEF_AGENCE:
+          case UserRole.RESPONSABLE_COPEC:
+          case UserRole.DG:
+          case UserRole.RH:
+          case UserRole.COMPTABLE:
+          case UserRole.DIRECTEUR_FINANCES:
             this.router.navigate(['/dashboard']);
             break;
-          case 'ADMIN':
+          case UserRole.ADMIN:
             this.router.navigate(['/admin']);
             break;
           default:
@@ -120,39 +83,51 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        
-        // Gestion des erreurs
-        if (error.status === 401) {
-          this.errorMessage = 'Identifiant ou mot de passe incorrect';
-        } else if (error.status === 403) {
-          this.errorMessage = 'Compte désactivé. Contactez l\'administrateur';
-        } else if (error.status === 0) {
-          this.errorMessage = 'Impossible de se connecter au serveur';
-        } else {
-          this.errorMessage = error.error?.message || 'Une erreur est survenue';
-        }
-
-        // Effacer le message après 5 secondes
-        setTimeout(() => {
-          this.errorMessage = '';
-        }, 5000);
+        this.errorMessage = 'Identifiants incorrects';
       }
     });
   }
 
-  // Helper pour afficher les erreurs de validation
-  getErrorMessage(fieldName: string): string {
-    const control = this.loginForm.get(fieldName);
+  testConnectivity(): void {
+    console.log('Test de connectivité vers le serveur...');
+    // Utiliser OPTIONS pour tester la connectivité sans déclencher d'erreur de méthode
+    this.http.options(`${environment.apiUrl}/users/auth/login/`, { observe: 'response' }).subscribe({
+      next: (response: HttpResponse<any>) => {
+        console.log('✅ Serveur accessible:', response.status);
+        this.errorMessage = '✅ Serveur accessible !';
+        setTimeout(() => this.errorMessage = '', 3000);
+      },
+      error: (error: any) => {
+        console.error('❌ Serveur non accessible:', error);
+        if (error.status === 0) {
+          this.errorMessage = '❌ Impossible de contacter le serveur. Vérifiez que le backend Django est lancé sur le port 8000.';
+        } else if (error.status === 405) {
+          // Méthode non autorisée est normale pour OPTIONS sur un endpoint POST
+          this.errorMessage = '✅ Serveur accessible ! (Méthode OPTIONS rejetée normalement)';
+          setTimeout(() => this.errorMessage = '', 3000);
+        } else {
+          this.errorMessage = `❌ Erreur serveur: ${error.status}`;
+        }
+        setTimeout(() => this.errorMessage = '', 5000);
+      }
+    });
+  }
+
+  debugConnection(): void {
+    console.log('=== DEBUG ÉTAT DE CONNEXION ===');
+    console.log('Connecté:', this.authService.isLoggedIn());
+    console.log('Utilisateur actuel:', this.authService.getCurrentUser());
+    console.log('Rôle utilisateur:', this.authService.getUserRole());
+    console.log('Token access:', this.authService.getAccessToken()?.substring(0, 50) + '...');
+    console.log('Token refresh:', this.authService.getRefreshToken()?.substring(0, 50) + '...');
     
-    if (control?.hasError('required')) {
-      return `Le champ ${fieldName} est requis`;
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      console.log('Permissions canCreateMissions:', user.can_create_missions);
+      console.log('Permissions canValidate:', user.can_validate);
     }
     
-    if (control?.hasError('minlength')) {
-      const minLength = control.errors?.['minlength'].requiredLength;
-      return `Minimum ${minLength} caractères requis`;
-    }
-    
-    return '';
+    this.errorMessage = '📋 Logs de débogage affichés dans la console (F12)';
+    setTimeout(() => this.errorMessage = '', 5000);
   }
 }

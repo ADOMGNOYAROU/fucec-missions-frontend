@@ -11,30 +11,40 @@ export function roleGuard(requiredRoles: UserRole[]): CanActivateFn {
     const authService = inject(AuthService);
     const router = inject(Router);
 
+    console.log('🔍 RoleGuard: Vérification des permissions');
+    console.log('   Route:', state.url);
+    console.log('   Rôles requis:', requiredRoles);
+
     // Vérifier si l'utilisateur est connecté
     if (!authService.isLoggedIn()) {
-      console.log('RoleGuard: Utilisateur non connecté - laisser authGuard gérer la connexion automatique');
-      // Ne pas rediriger ici, laisser authGuard faire la connexion automatique
-      return true;
+      console.log('❌ RoleGuard: Utilisateur non connecté');
+      router.navigate(['/auth/login']);
+      return false;
     }
 
     // Vérifier si l'utilisateur a un des rôles requis
     const currentUser = authService.getCurrentUser();
+    console.log('👤 Utilisateur actuel:', currentUser);
+
     if (!currentUser) {
-      console.log('RoleGuard: Aucun utilisateur trouvé');
+      console.log('❌ RoleGuard: Aucun utilisateur trouvé');
+      router.navigate(['/auth/login']);
       return false;
     }
 
+    console.log('🎭 Rôle de l\'utilisateur:', currentUser.role);
+
     // Utiliser la méthode hasAnyRole du service
     const hasRequiredRole = authService.hasAnyRole(requiredRoles);
+    console.log('✅ A les permissions requises:', hasRequiredRole);
 
     if (hasRequiredRole) {
-      console.log(`RoleGuard: Accès autorisé pour rôle ${currentUser.role} (rôles requis: ${requiredRoles.join(', ')})`);
+      console.log(`✅ RoleGuard: Accès autorisé pour rôle ${currentUser.role} (rôles requis: ${requiredRoles.join(', ')})`);
       return true;
     }
 
     // Rediriger vers une page d'accès refusé ou dashboard
-    console.log(`RoleGuard: Accès refusé pour rôle ${currentUser.role} (rôles requis: ${requiredRoles.join(', ')})`);
+    console.log(`❌ RoleGuard: Accès refusé pour rôle ${currentUser.role} (rôles requis: ${requiredRoles.join(', ')})`);
     router.navigate(['/acces-refuse']);
     return false;
   };
@@ -42,41 +52,41 @@ export function roleGuard(requiredRoles: UserRole[]): CanActivateFn {
 
 // Guards prédéfinis pour les rôles communs
 
-export const agentGuard: CanActivateFn = roleGuard(['AGENT']);
+export const agentGuard: CanActivateFn = roleGuard([UserRole.AGENT]);
 
-export const chefAgenceGuard: CanActivateFn = roleGuard(['CHEF_AGENCE']);
+export const chefAgenceGuard: CanActivateFn = roleGuard([UserRole.CHEF_AGENCE]);
 
-export const responsableCopecGuard: CanActivateFn = roleGuard(['RESPONSABLE_COPEC']);
+export const responsableCopecGuard: CanActivateFn = roleGuard([UserRole.RESPONSABLE_COPEC]);
 
-export const dgGuard: CanActivateFn = roleGuard(['DG']);
+export const dgGuard: CanActivateFn = roleGuard([UserRole.DG]);
 
-export const rhGuard: CanActivateFn = roleGuard(['RH']);
+export const rhGuard: CanActivateFn = roleGuard([UserRole.RH]);
 
-export const comptableGuard: CanActivateFn = roleGuard(['COMPTABLE']);
+export const comptableGuard: CanActivateFn = roleGuard([UserRole.COMPTABLE]);
 
-export const adminGuard: CanActivateFn = roleGuard(['ADMIN']);
+export const adminGuard: CanActivateFn = roleGuard([UserRole.ADMIN]);
 
 // Guards pour groupes de rôles
 
 export const validateurGuard: CanActivateFn = roleGuard([
-  'CHEF_AGENCE',
-  'RESPONSABLE_COPEC',
-  'DG'
+  UserRole.CHEF_AGENCE,
+  UserRole.RESPONSABLE_COPEC,
+  UserRole.DG
 ]);
 
 export const financeGuard: CanActivateFn = roleGuard([
-  'COMPTABLE',
-  'DIRECTEUR_FINANCES',
-  'RH',
-  'DG'
+  UserRole.COMPTABLE,
+  UserRole.DIRECTEUR_FINANCES,
+  UserRole.RH,
+  UserRole.DG
 ]);
 
 export const allStaffGuard: CanActivateFn = roleGuard([
-  'AGENT',
-  'CHEF_AGENCE',
-  'RESPONSABLE_COPEC',
-  'DG',
-  'RH',
-  'COMPTABLE',
-  'ADMIN'
+  UserRole.AGENT,
+  UserRole.CHEF_AGENCE,
+  UserRole.RESPONSABLE_COPEC,
+  UserRole.DG,
+  UserRole.RH,
+  UserRole.COMPTABLE,
+  UserRole.ADMIN
 ]);

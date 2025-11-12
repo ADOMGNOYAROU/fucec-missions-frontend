@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { AuthService, User } from '../../core/services/auth.service';
+import { AuthService, User, UserRole } from '../../core/services/auth.service';
+import { MissionService } from '../missions/services/mission.service';
 
 // Interfaces temporaires (en attendant les vrais services)
 interface DashboardStats {
@@ -26,8 +27,8 @@ interface Validation {
     id: string;
     titre: string;
     createur: {
-      prenom: string;
-      nom: string;
+      first_name: string;
+      last_name: string;
     };
   };
   niveau: string;
@@ -57,7 +58,8 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     public authService: AuthService,
-    private router: Router
+    private router: Router,
+    private missionService: MissionService
   ) {}
 
   ngOnInit(): void {
@@ -69,7 +71,6 @@ export class DashboardComponent implements OnInit {
    * Charger les données du dashboard
    */
   loadDashboardData(): void {
-    // TODO: Remplacer par de vrais appels API
     this.loadStats();
     this.loadRecentMissions();
     
@@ -82,51 +83,57 @@ export class DashboardComponent implements OnInit {
    * Charger les statistiques
    */
   private loadStats(): void {
-    // Données fictives pour le moment
-    this.stats = {
-      totalMissions: 24,
-      enCours: 5,
-      enAttenteValidation: 3,
-      budgetUtilise: 4750000,
-      justificatifsEnAttente: 2
-    };
+    this.missionService.getStats().subscribe({
+      next: (response: any) => {
+        this.stats = {
+          totalMissions: response.total_missions || 0,
+          enCours: response.en_cours || 0,
+          enAttenteValidation: response.en_attente_validation || 0,
+          budgetUtilise: response.budget_utilise || 0,
+          justificatifsEnAttente: response.justificatifs_en_attente || 0
+        };
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des statistiques:', error);
+        // Garder les valeurs par défaut (0)
+      }
+    });
   }
 
   /**
    * Charger les missions récentes
    */
   private loadRecentMissions(): void {
-    // Données fictives
-    this.recentMissions = [
-      {
-        id: '1',
-        titre: 'Mission de formation à Kpalimé',
-        dateDebut: new Date('2025-10-15'),
-        lieuMission: 'Kpalimé',
-        statut: 'IN_PROGRESS'
+    // Paramètres pour récupérer les missions récentes (limitées à 5)
+    const params = {
+      limit: 5,
+      ordering: '-date_creation'  // Les plus récentes en premier
+    };
+
+    this.missionService.list(params).subscribe({
+      next: (response: any) => {
+        // Transformer les données API en format dashboard
+        this.recentMissions = (response.results || response || []).map((mission: any) => ({
+          id: mission.id,
+          titre: mission.titre,
+          dateDebut: new Date(mission.date_debut),
+          lieuMission: mission.lieu_mission,
+          statut: mission.statut
+        }));
       },
-      {
-        id: '2',
-        titre: 'Audit agence Atakpamé',
-        dateDebut: new Date('2025-10-20'),
-        lieuMission: 'Atakpamé',
-        statut: 'EN_ATTENTE'
-      },
-      {
-        id: '3',
-        titre: 'Visite COPEC Plateaux',
-        dateDebut: new Date('2025-10-25'),
-        lieuMission: 'Plateaux',
-        statut: 'VALIDEE'
+      error: (error) => {
+        console.error('Erreur lors du chargement des missions récentes:', error);
+        this.recentMissions = [];
       }
-    ];
+    });
   }
 
   /**
    * Charger les validations en attente
    */
   private loadPendingValidations(): void {
-    // Données fictives
+    // Pour le moment, garder les données fictives car l'API de validations n'est pas encore implémentée
+    // TODO: Remplacer par un vrai appel API quand l'endpoint sera disponible
     this.pendingValidations = [
       {
         id: '1',
@@ -134,8 +141,8 @@ export class DashboardComponent implements OnInit {
           id: '1',
           titre: 'Formation développeurs',
           createur: {
-            prenom: 'Jean',
-            nom: 'DUPONT'
+            first_name: 'Jean',
+            last_name: 'DUPONT'
           }
         },
         niveau: 'N1',
@@ -147,8 +154,8 @@ export class DashboardComponent implements OnInit {
           id: '2',
           titre: 'Contrôle agence Sokodé',
           createur: {
-            prenom: 'Marie',
-            nom: 'KOUASSI'
+            first_name: 'Marie',
+            last_name: 'KOUASSI'
           }
         },
         niveau: 'N2',
@@ -231,7 +238,7 @@ export class DashboardComponent implements OnInit {
   }
 
   public isChefAgence(): boolean {
-    return this.authService.hasRole('CHEF_AGENCE');
+    return this.authService.hasRole(UserRole.CHEF_AGENCE);
   }
 
   public navigateToCreateMission(): void {

@@ -20,4 +20,8 @@ export const environment = {
   // Délais SLA
   slaDelaiValidation: 72,
   slaDelaiJustificatifs: 72,
+
+  // Auto-login dev désactivé en production
+  devAutoLogin: false,
+  devUser: null,
 };

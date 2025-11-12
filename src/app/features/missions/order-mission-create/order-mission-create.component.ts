@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService, User, UserRole } from '../../../core/services/auth.service';
+import { MissionService } from '../services/mission.service';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -27,6 +28,7 @@ export class OrderMissionCreateComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
+    private missionService: MissionService,
     private router: Router
   ) {}
 
@@ -187,12 +189,44 @@ export class OrderMissionCreateComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // TODO: Remplacer par un appel API réel pour créer l'ordre de mission
-    setTimeout(() => {
-      this.submitting = false;
-      this.autoSaveEnabled = true;
-      this.router.navigate(['/missions']);
-    }, 500);
+    // Préparer les données pour l'API
+    const formData = this.orderForm.getRawValue();
+    const missionData = {
+      titre: formData.titre,
+      description: formData.description,
+      type: formData.motifMission, // Le backend utilise 'type', pas 'motifMission'
+      date_debut: formData.dateDebut,
+      date_fin: formData.dateFin,
+      lieu_mission: formData.lieuMission,
+      budget_estime: formData.budgetEstime,
+      avance_demandee: Math.round(formData.budgetEstime * 0.5), // 50% d'avance par défaut
+      participants: formData.participants || []
+    };
+
+    console.log('Envoi des données de mission:', missionData);
+
+    // Appel API réel pour créer la mission
+    this.missionService.create(missionData).subscribe({
+      next: (response) => {
+        console.log('Mission créée avec succès:', response);
+        this.submitting = false;
+        this.autoSaveEnabled = true;
+
+        // Supprimer le brouillon sauvegardé
+        localStorage.removeItem('orderMissionDraft');
+
+        // Rediriger vers la liste des missions ou vers les détails de la mission créée
+        this.router.navigate(['/missions']);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la création de la mission:', error);
+        this.submitting = false;
+        this.autoSaveEnabled = true;
+
+        // TODO: Afficher un message d'erreur à l'utilisateur
+        alert('Erreur lors de la création de la mission. Veuillez réessayer.');
+      }
+    });
   }
 
   /**

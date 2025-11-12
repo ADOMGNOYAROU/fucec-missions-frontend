@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService, User, UserRole } from '../../../core/services/auth.service';
+import { MissionService } from '../services/mission.service';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
 
 // Interfaces temporaires
@@ -15,8 +16,8 @@ interface Vehicule {
 
 interface Participant {
   id: string;
-  prenom: string;
-  nom: string;
+  first_name: string;
+  last_name: string;
   role: UserRole;
 }
 
@@ -47,6 +48,7 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
+    private missionService: MissionService,
     private router: Router
   ) {}
 
@@ -145,8 +147,8 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
     ];
 
     this.chauffeurs = [
-      { id: '10', prenom: 'Jean', nom: 'K.', role: 'CHAUFFEUR' as UserRole },
-      { id: '11', prenom: 'Paul', nom: 'M.', role: 'CHAUFFEUR' as UserRole }
+      { id: '10', first_name: 'Jean', last_name: 'K.', role: UserRole.CHAUFFEUR },
+      { id: '11', first_name: 'Paul', last_name: 'M.', role: UserRole.CHAUFFEUR }
     ] as unknown as User[];
   }
 
@@ -174,12 +176,41 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
       this.autoSaveEnabled = true; // Réactiver
       return;
     }
-    // TODO: Remplacer par un appel API réel
-    setTimeout(() => {
-      this.submitting = false;
-      this.autoSaveEnabled = true; // Réactiver
-      this.router.navigate(['/missions']);
-    }, 500);
+
+    // Préparer les données pour l'API
+    const formData = this.missionForm.value;
+
+    // Adapter les données pour correspondre à l'API backend
+    const missionData = {
+      titre: formData.titre,
+      description: formData.description,
+      type: formData.type,
+      date_debut: formData.dateDebut,
+      date_fin: formData.dateFin,
+      lieu_mission: formData.lieuMission,
+      budget_prevu: formData.budgetPrevu || 0,
+      intervenants: this.selectedParticipants.map(p => p.id),
+      objet_mission: formData.objetMission,
+      entite_nom: formData.entiteNom,
+      entite_type: formData.entiteType
+    };
+
+    this.missionService.create(missionData).subscribe({
+      next: (response) => {
+        console.log('Mission créée:', response);
+        this.submitting = false;
+        this.autoSaveEnabled = true;
+        // Nettoyer le brouillon après succès
+        localStorage.removeItem('missionDraft');
+        this.router.navigate(['/missions']);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la création:', error);
+        this.submitting = false;
+        this.autoSaveEnabled = true;
+        alert('Erreur lors de la création de la mission. Veuillez réessayer.');
+      }
+    });
   }
 
   /**
@@ -240,9 +271,9 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
     // Pour l'instant on ajoute un participant fictif
     this.selectedParticipants.push({
       id: crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
-      prenom: 'Invité',
-      nom: 'Temporaire',
-      role: 'AGENT' as UserRole
+      first_name: 'Invité',
+      last_name: 'Temporaire',
+      role: UserRole.AGENT
     });
   }
 }

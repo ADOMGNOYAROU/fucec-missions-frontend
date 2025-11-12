@@ -105,10 +105,10 @@
     <div class="sidebar-footer">
       <div class="user-profile">
         <div class="user-avatar">
-          {{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}
+          {{ currentUser?.first_name?.charAt(0) }}{{ currentUser?.last_name?.charAt(0) }}
         </div>
         <div class="user-info" *ngIf="!sidebarCollapsed">
-          <div class="user-name">{{ currentUser?.prenom }} {{ currentUser?.nom }}</div>
+          <div class="user-name">{{ currentUser?.first_name }} {{ currentUser?.last_name }}</div>
           <div class="user-role">{{ getRoleLabel(currentUser?.role) }}</div>
         </div>
       </div>
@@ -142,7 +142,7 @@
         <div class="user-menu">
           <button class="user-btn" (click)="toggleUserMenu()">
             <div class="user-avatar-sm">
-              {{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}
+              {{ currentUser?.first_name?.charAt(0) }}{{ currentUser?.last_name?.charAt(0) }}
             </div>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <polyline points="6 9 12 15 18 9"></polyline>

@@ -39,16 +39,16 @@
     <!-- Liste des missions -->
     <ng-container *ngIf="filteredMissions.length > 0; else noMissions">
       <div class="list-item" *ngFor="let mission of filteredMissions">
-        <div class="col title">{{ mission.title }}</div>
-        <div class="col">{{ mission.date | date:'dd/MM/yyyy' }}</div>
-        <div class="col">{{ mission.location }}</div>
+        <div class="col title">{{ mission.titre }}</div>
+        <div class="col">{{ mission.date_debut | date:'dd/MM/yyyy' }}</div>
+        <div class="col">{{ mission.lieu_mission }}</div>
         <div class="col">
           <app-badge [variant]="getStatusClass(mission.status)">
             {{ getStatusLabel(mission.status) }}
           </app-badge>
         </div>
         <div class="col" *ngIf="isChefAgence">
-          {{ mission.creator?.prenom }} {{ mission.creator?.nom }}
+          {{ mission.createur.prenom }} {{ mission.createur.nom }}
         </div>
         <div class="col actions">
           <!-- Actions selon les permissions -->
@@ -60,24 +60,28 @@
               </svg>
             </a>
             
-            <button appBtn variant="primary" 
-                    *ngIf="actions.canValidate" 
-                    (click)="validateMission(mission.id, 'VALIDEE')"
-                    title="Valider">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </button>
-            
-            <button appBtn variant="danger" 
-                    *ngIf="actions.canValidate" 
-                    (click)="validateMission(mission.id, 'REJETEE')"
-                    title="Rejeter">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+            <!-- Boutons de validation selon le rôle -->
+            <ng-container *ngFor="let action of actions.availableActions">
+              <button appBtn 
+                      [variant]="getActionVariant(action)" 
+                      (click)="validateMission(mission.id, action)"
+                      [title]="getActionTitle(action)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <ng-container [ngSwitch]="action">
+                    <polyline *ngSwitchCase="'VISER'" points="20 6 9 17 4 12"></polyline>
+                    <polyline *ngSwitchCase="'VALIDER'" points="20 6 9 17 4 12"></polyline>
+                    <polyline *ngSwitchCase="'APPROUVER'" points="20 6 9 17 4 12"></polyline>
+                    <line *ngSwitchCase="'REJETER'" x1="18" y1="6" x2="6" y2="18"></line>
+                    <line *ngSwitchCase="'REPORTER'" x1="12" y1="8" x2="12" y2="16"></line>
+                  </ng-container>
+                  <ng-container [ngSwitch]="action">
+                    <line *ngSwitchCase="'REJETER'" x1="6" y1="6" x2="18" y2="18"></line>
+                    <line *ngSwitchCase="'REPORTER'" x1="8" y1="12" x2="16" y2="12"></line>
+                  </ng-container>
+                </svg>
+                {{ getActionLabel(action) }}
+              </button>
+            </ng-container>
             
             <a appBtn variant="secondary" 
                *ngIf="actions.canEdit" 

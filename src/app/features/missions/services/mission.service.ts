@@ -11,156 +11,111 @@ export class MissionService {
 
   constructor(private http: HttpClient) { }
 
-  getOne(id: string | number): Observable<any> {
-    // Mode mock - retourner une mission fictive
-    const mockMission = {
-      id: id,
-      title: `Mission ${id}`,
-      description: 'Mission de formation et développement',
-      status: 'EN_COURS',
-      createdAt: '2025-01-15',
-      creator: {
-        id: 1,
-        nom: 'Agent',
-        prenom: 'Simple'
-      },
-      intervenants: [
-        {
-          id: 1,
-          nom: 'Agent',
-          prenom: 'Simple',
-          role: 'AGENT'
-        }
-      ],
-      justificatifs: [
-        {
-          id: 1,
-          filename: 'Justificatif.pdf',
-          category: 'Transport',
-          amount: 150000
-        }
-      ]
-    };
-
-    return of(mockMission).pipe(delay(300));
-  }
-
   list(params?: any): Observable<any> {
-    // Mode mock - retourner une liste de missions fictives selon la hiérarchie
-    const mockMissions = {
-      data: [
-        {
-          id: 1,
-          title: 'Mission de formation',
-          description: 'Formation sur Angular avancé',
-          status: 'EN_ATTENTE',
-          date: '2025-11-10',
-          location: 'Lomé',
-          amount: 250000,
-          creator: {
-            id: 2,
-            nom: 'Agent',
-            prenom: 'Simple'
-          }
-        },
-        {
-          id: 2,
-          title: 'Audit interne',
-          description: 'Audit des procédures RH',
-          status: 'VALIDEE',
-          date: '2025-11-05',
-          location: 'Kara',
-          amount: 180000,
-          creator: {
-            id: 2,
-            nom: 'Agent',
-            prenom: 'Simple'
-          }
-        },
-        {
-          id: 3,
-          title: 'Réunion de coordination',
-          description: 'Réunion avec les partenaires',
-          status: 'EN_COURS',
-          date: '2025-11-15',
-          location: 'Sokodé',
-          amount: 320000,
-          creator: {
-            id: 1,
-            nom: 'Chef',
-            prenom: 'Agence'
-          }
-        },
-        {
-          id: 4,
-          title: 'Mission commerciale',
-          description: 'Développement commercial',
-          status: 'BROUILLON',
-          date: '2025-11-20',
-          location: 'Dapaong',
-          amount: 150000,
-          creator: {
-            id: 8,
-            nom: 'Agent',
-            prenom: 'Deuxième'
-          }
-        },
-        {
-          id: 5,
-          title: 'Formation équipe',
-          description: 'Formation en management',
-          status: 'EN_ATTENTE',
-          date: '2025-11-12',
-          location: 'Lomé',
-          amount: 400000,
-          creator: {
-            id: 9,
-            nom: 'Chef',
-            prenom: 'Service'
-          }
-        }
-      ],
-      pagination: {
-        total: 5,
-        page: 1,
-        limit: 10,
-        totalPages: 1
-      },
-      total: 5
-    };
+    let url = `${environment.apiUrl}/missions/`;
 
-    // Simuler un délai réseau
-    return of(mockMissions).pipe(delay(300));
+    // Ajouter les paramètres de requête si fournis
+    if (params) {
+      const queryParams = new URLSearchParams();
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined) {
+          queryParams.append(key, params[key]);
+        }
+      });
+      const queryString = queryParams.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    }
+
+    return this.http.get(url);
   }
 
   create(data: any): Observable<any> {
-    // Mode mock - simuler la création
-    const mockResponse = {
-      success: true,
-      message: 'Mission créée avec succès',
-      id: Date.now()
-    };
-
-    return of(mockResponse).pipe(delay(500));
+    return this.http.post(`${environment.apiUrl}/missions/`, data);
   }
 
   update(id: string | number, data: any): Observable<any> {
-    // Mode mock - simuler la mise à jour
-    const mockResponse = {
-      success: true,
-      message: 'Mission mise à jour avec succès'
-    };
-
-    return of(mockResponse).pipe(delay(300));
+    return this.http.put(`${environment.apiUrl}/missions/${id}/`, data);
   }
 
   delete(id: string | number): Observable<any> {
-    // Mode mock - simuler la suppression
-    const mockResponse = {
-      success: true,
-      message: 'Mission supprimée avec succès'
-    };
+    return this.http.delete(`${environment.apiUrl}/missions/${id}/`);
+  }
 
-    return of(mockResponse).pipe(delay(300));
+  getOne(id: string | number): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/missions/${id}/`);
+  }
+
+  // Validation des missions
+  validateMission(missionId: number, decision: 'VISER' | 'VALIDER' | 'APPROUVER' | 'REJETER' | 'REPORTER', commentaire?: string): Observable<any> {
+    const endpoint = `${environment.apiUrl}/missions/${missionId}/validate/${decision}/`;
+    const payload = commentaire ? { commentaire } : {};
+
+    return this.http.post(endpoint, payload);
+  }
+
+  // Méthodes spécifiques pour chaque niveau
+  viserMission(missionId: number, commentaire?: string): Observable<any> {
+    return this.validateMission(missionId, 'VISER', commentaire);
+  }
+
+  validerMission(missionId: number, commentaire?: string): Observable<any> {
+    return this.validateMission(missionId, 'VALIDER', commentaire);
+  }
+
+  approuverMission(missionId: number, commentaire?: string): Observable<any> {
+    return this.validateMission(missionId, 'APPROUVER', commentaire);
+  }
+
+  rejeterMission(missionId: number, commentaire?: string): Observable<any> {
+    return this.validateMission(missionId, 'REJETER', commentaire);
+  }
+
+  reporterMission(missionId: number, commentaire?: string): Observable<any> {
+    return this.validateMission(missionId, 'REPORTER', commentaire);
+  }
+
+  // Justificatifs
+  listJustificatifs(params?: any): Observable<any> {
+    let url = `${environment.apiUrl}/missions/justificatifs/`;
+
+    if (params) {
+      const queryParams = new URLSearchParams();
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined) {
+          queryParams.append(key, params[key]);
+        }
+      });
+      const queryString = queryParams.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    }
+
+    return this.http.get(url);
+  }
+
+  createJustificatif(data: any): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/missions/justificatifs/`, data);
+  }
+
+  updateJustificatif(id: number, data: any): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/missions/justificatifs/${id}/`, data);
+  }
+
+  deleteJustificatif(id: number): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/missions/justificatifs/${id}/`);
+  }
+
+  validateJustificatif(justificatifId: number, decision: 'valider' | 'rejeter' | 'rembourser', commentaire?: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/missions/justificatifs/${justificatifId}/validate/${decision}/`, {
+      commentaire: commentaire || ''
+    });
+  }
+
+  // Statistiques
+  getStats(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/missions/stats/`);
   }
 }

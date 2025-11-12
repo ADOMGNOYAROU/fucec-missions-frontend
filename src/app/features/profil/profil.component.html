@@ -25,10 +25,10 @@
       </div>
       <div class="card-body">
         <div class="user-avatar-large">
-          {{ currentUser?.prenom?.charAt(0) }}{{ currentUser?.nom?.charAt(0) }}
+          {{ currentUser?.first_name?.charAt(0) }}{{ currentUser?.last_name?.charAt(0) }}
         </div>
         <div class="user-details">
-          <h3>{{ currentUser?.prenom }} {{ currentUser?.nom }}</h3>
+          <h3>{{ currentUser?.first_name }} {{ currentUser?.last_name }}</h3>
           <p class="user-email">{{ currentUser?.email }}</p>
           <span class="user-role-badge">{{ getRoleLabel(currentUser?.role) }}</span>
           <div class="role-description" *ngIf="isChefAgence()">

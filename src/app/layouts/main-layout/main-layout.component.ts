@@ -208,13 +208,13 @@ export class MainLayoutComponent implements OnInit {
    */
   canAccessMissions(): boolean {
     return this.authService.hasAnyRole([
-      'AGENT' as UserRole,
-      'CHEF_AGENCE' as UserRole,
-      'RESPONSABLE_COPEC' as UserRole,
-      'DG' as UserRole,
-      'RH' as UserRole,
-      'COMPTABLE' as UserRole,
-      'ADMIN' as UserRole
+      UserRole.AGENT,
+      UserRole.CHEF_AGENCE,
+      UserRole.RESPONSABLE_COPEC,
+      UserRole.DG,
+      UserRole.RH,
+      UserRole.COMPTABLE,
+      UserRole.ADMIN
     ]);
   }
 
@@ -223,13 +223,13 @@ export class MainLayoutComponent implements OnInit {
    */
   canAccessJustificatifs(): boolean {
     return this.authService.hasAnyRole([
-      'AGENT' as UserRole,
-      'CHEF_AGENCE' as UserRole,
-      'RESPONSABLE_COPEC' as UserRole,
-      'DG' as UserRole,
-      'RH' as UserRole,
-      'COMPTABLE' as UserRole,
-      'ADMIN' as UserRole
+      UserRole.AGENT,
+      UserRole.CHEF_AGENCE,
+      UserRole.RESPONSABLE_COPEC,
+      UserRole.DG,
+      UserRole.RH,
+      UserRole.COMPTABLE,
+      UserRole.ADMIN
     ]);
   }
 
@@ -238,9 +238,9 @@ export class MainLayoutComponent implements OnInit {
    */
   canValidate(): boolean {
     const result = this.authService.hasAnyRole([
-      'CHEF_AGENCE' as UserRole,
-      'RESPONSABLE_COPEC' as UserRole,
-      'DG' as UserRole
+      UserRole.CHEF_AGENCE,
+      UserRole.RESPONSABLE_COPEC,
+      UserRole.DG
     ]);
     console.log('canValidate() called, result:', result);
     return result;
@@ -251,10 +251,10 @@ export class MainLayoutComponent implements OnInit {
    */
   canAccessFinance(): boolean {
     return this.authService.hasAnyRole([
-      'COMPTABLE' as UserRole,
-      'DIRECTEUR_FINANCES' as UserRole,
-      'RH' as UserRole,
-      'DG' as UserRole
+      UserRole.COMPTABLE,
+      UserRole.DIRECTEUR_FINANCES,
+      UserRole.RH,
+      UserRole.DG
     ]);
   }
 
@@ -262,7 +262,7 @@ export class MainLayoutComponent implements OnInit {
    * Vérifier si l'utilisateur est admin
    */
   isAdmin(): boolean {
-    return this.authService.hasRole('ADMIN' as UserRole);
+    return this.authService.hasRole(UserRole.ADMIN);
   }
 
   /**

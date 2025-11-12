@@ -1,7 +1,8 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, BehaviorSubject, tap, of, map } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
@@ -9,8 +10,8 @@ import { environment } from '../../../environments/environment';
 export interface User {
   id: string;
   identifiant: string;
-  nom: string;
-  prenom: string;
+  first_name: string;
+  last_name: string;
   email: string;
   role: UserRole;
   managerId?: string; // ID du supérieur hiérarchique
@@ -21,31 +22,83 @@ export interface User {
   };
   telephone?: string;
   matricule?: string;
+  // Propriétés calculées du backend
+  full_name?: string;
+  can_validate?: boolean;
+  can_create_missions?: boolean;
+  // Autres champs du modèle
+  date_joined?: string;
+  is_active?: boolean;
 }
 
-export type UserRole = 
-  | 'AGENT' 
-  | 'CHEF_AGENCE' 
-  | 'RESPONSABLE_COPEC' 
-  | 'DG' 
-  | 'RH' 
-  | 'COMPTABLE' 
-  | 'ADMIN'
-  | 'DIRECTEUR_FINANCES'
-  | 'CHAUFFEUR';
+// Enums et types
+export enum UserRole {
+  AGENT = 'AGENT',
+  CHEF_AGENCE = 'CHEF_AGENCE',
+  RESPONSABLE_COPEC = 'RESPONSABLE_COPEC',
+  DG = 'DG',
+  RH = 'RH',
+  COMPTABLE = 'COMPTABLE',
+  DIRECTEUR_FINANCES = 'DIRECTEUR_FINANCES',
+  CHAUFFEUR = 'CHAUFFEUR',
+  ADMIN = 'ADMIN'
+}
 
 export interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
+  access: string;
+  refresh: string;
   user: User;
-  expires_in: number;
+}
+
+export type ValidationLevel = 
+  | 'N_PLUS_1'    // Chef direct
+  | 'N_PLUS_2'    // Chef du N+1  
+  | 'DGA_DG';     // Direction Générale
+
+export type ValidationDecision = 
+  | 'VISER'       // Pour N+1
+  | 'VALIDER'     // Pour N+2 et DGA/DG
+  | 'APPROUVER'   // Pour DGA/DG final
+  | 'REJETER'     // Rejet définitif
+  | 'REPORTER';   // Reporter à plus tard
+
+export interface Validation {
+  id: string;
+  mission: Mission;
+  niveau: ValidationLevel;
+  statut: 'EN_ATTENTE' | 'VALIDEE' | 'REJETEE' | 'REPORTEE';
+  commentaire?: string;
+  date_creation: string;
+  date_validation?: string;
+  valideur?: User;
+  ordre: number;
+}
+
+export interface Mission {
+  id: string;
+  reference: string;
+  titre: string;
+  description?: string;
+  type: string;
+  statut: string;
+  date_debut: string;
+  date_fin: string;
+  lieu_mission: string;
+  budget_prevu: number;
+  createur: User;
+  intervenants: User[];
+  validations: Validation[];
+  date_creation: string;
+  // Nouveaux champs pour le workflow
+  ordre_mission_genere?: boolean;
+  ordre_mission_url?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/auth`;
+  private apiUrl = `${environment.apiUrl}/users`;
   
   // BehaviorSubject pour suivre l'état de connexion
   private currentUserSubject = new BehaviorSubject<User | null>(null);
@@ -58,150 +111,230 @@ export class AuthService {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+    
     if (this.isBrowser) {
-      const u = this.getUserFromStorage();
-      if (u) this.currentUserSubject.next(u);
-      // Dev auto-login (only if enabled)
-      if (!u && environment.devAutoLogin) {
-        const devUser = environment.devUser as unknown as User;
-        this.storeUser(devUser);
-        // store a safe dev token
-        this.storeTokens('dev', 'dev');
-        this.currentUserSubject.next(devUser);
-        // Redirect to dashboard if currently on auth
-        try {
-          const url = this.router.url || '';
-          if (url.startsWith('/auth')) {
-            this.router.navigate(['/dashboard']);
-          }
-        } catch {}
+      console.log('🚀 AuthService: Constructor appelé - Initialisation du service d\'authentification');
+      
+      // Nettoyer les anciennes données de développement
+      this.cleanOldDevData();
+      
+      // Toujours faire l'auto-connexion dev en développement si activée
+      if (environment.devAutoLogin) {
+        console.log('🚀 AuthService: Auto-connexion dev activée - Démarrage immédiat');
+        // Faire l'auto-connexion immédiatement sans attendre
+        this.devAutoLogin();
+        console.log('✅ AuthService: Auto-connexion dev terminée dans constructor');
+      } else {
+        // Auto-connexion API automatique pour agent simple
+        console.log('🚀 AuthService: Auto-connexion API activée');
+        this.forceAutoLogin();
       }
+    } else {
+      console.log('🔧 AuthService: Mode SSR - pas d\'auto-connexion');
     }
   }
 
   /**
-   * Connexion utilisateur (mode mock pour développement)
+   * Nettoyer les anciennes données de développement
+   */
+  private cleanOldDevData(): void {
+    if (!this.isBrowser) return;
+    
+    const accessToken = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
+    
+    // Si les tokens sont des tokens de développement ('dev'), les supprimer
+    if (accessToken === 'dev' || refreshToken === 'dev') {
+      console.log('🧹 AuthService: Nettoyage des anciens tokens de développement');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('current_user');
+      this.currentUserSubject.next(null);
+    }
+  }
+
+  /**
+   * Auto-connexion API forcée (toujours exécutée)
+   */
+  private forceAutoLogin(): void {
+    console.log('🔐 AuthService: Démarrage auto-connexion API forcée');
+
+    if (!environment.autoLoginEnabled) {
+      console.log('⚠️ AuthService: Auto-connexion API désactivée dans environment');
+      return;
+    }
+
+    const credentials = environment.autoLoginCredentials;
+    if (!credentials) {
+      console.warn('⚠️ AuthService: Credentials d\'auto-connexion non configurés');
+      return;
+    }
+
+    console.log(`🔐 AuthService: Tentative de connexion avec ${credentials.identifiant}`);
+
+    // Faire la connexion API immédiatement
+    this.login(credentials.identifiant, credentials.password).subscribe({
+      next: (response) => {
+        console.log('✅ AuthService: Auto-connexion API réussie');
+        console.log('👤 AuthService: Utilisateur connecté:', response.user?.first_name, response.user?.last_name);
+        console.log('🎭 AuthService: Rôle:', response.user?.role);
+        console.log('🔑 AuthService: Tokens reçus - Access:', !!response.access, 'Refresh:', !!response.refresh);
+      },
+      error: (error) => {
+        console.error('❌ AuthService: ÉCHEC AUTO-CONNEXION API:', error);
+        console.error('❌ AuthService: Détails erreur:', error.message || error);
+        console.error('❌ AuthService: Status:', error.status || 'Inconnu');
+        console.error('❌ AuthService: URL:', error.url || 'Inconnue');
+
+        // Afficher le body de l'erreur si disponible
+        if (error.error) {
+          console.error('❌ AuthService: Erreur body:', error.error);
+        }
+
+        // Essayer avec des credentials codés en dur pour debug
+        console.log('🔧 AuthService: Tentative avec credentials codés en dur...');
+        this.login('agent', 'test123').subscribe({
+          next: (fallbackResponse) => {
+            console.log('✅ AuthService: Connexion de fallback réussie');
+          },
+          error: (fallbackError) => {
+            console.error('❌ AuthService: Échec même avec fallback:', fallbackError.message);
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Auto-connexion dev (simulation)
+   */
+  private devAutoLogin(): void {
+    console.log('🔐 AuthService: Démarrage devAutoLogin');
+    const devUserConfig = environment.devUser;
+    if (!devUserConfig) {
+      console.warn('⚠️ AuthService: devUser non configuré dans environment');
+      return;
+    }
+
+    // Convertir la string role en UserRole enum
+    const userRole = this.stringToUserRole(devUserConfig.role);
+    if (!userRole) {
+      console.error('❌ AuthService: Rôle invalide dans devUser:', devUserConfig.role);
+      return;
+    }
+
+    // Créer l'objet User avec le bon type
+    const devUser: User = {
+      ...devUserConfig,
+      role: userRole
+    };
+
+    console.log('🔐 AuthService: Auto-connexion dev pour:', devUser.first_name, devUser.last_name, devUser.role);
+
+    // Stocker dans localStorage
+    if (this.isBrowser) {
+      localStorage.setItem('current_user', JSON.stringify(devUser));
+      localStorage.setItem('access_token', 'dev');
+      localStorage.setItem('refresh_token', 'dev');
+    }
+
+    // Mettre à jour le BehaviorSubject
+    this.currentUserSubject.next(devUser);
+
+    console.log('✅ AuthService: Auto-connexion dev réussie');
+  }
+
+  /**
+   * Convertit une string en UserRole enum
+   */
+  private stringToUserRole(roleString: string): UserRole | null {
+    const roleMap: { [key: string]: UserRole } = {
+      'AGENT': UserRole.AGENT,
+      'CHEF_AGENCE': UserRole.CHEF_AGENCE,
+      'RESPONSABLE_COPEC': UserRole.RESPONSABLE_COPEC,
+      'DG': UserRole.DG,
+      'RH': UserRole.RH,
+      'COMPTABLE': UserRole.COMPTABLE,
+      'DIRECTEUR_FINANCES': UserRole.DIRECTEUR_FINANCES,
+      'CHAUFFEUR': UserRole.CHAUFFEUR,
+      'ADMIN': UserRole.ADMIN
+    };
+
+    return roleMap[roleString] || null;
+  }
+
+  /**
+   * Auto-connexion automatique avec un agent simple
+   */
+  private autoLoginAgent(): Observable<boolean> {
+    const credentials = environment.autoLoginCredentials;
+    if (!credentials) {
+      console.warn('⚠️ Auto-login activé mais pas de credentials configurés');
+      return of(false);
+    }
+
+    console.log(`🔐 Tentative d'auto-connexion avec ${credentials.identifiant}`);
+
+    return this.login(credentials.identifiant, credentials.password).pipe(
+      map(() => true), // Connexion réussie
+      catchError((error) => {
+        console.error('❌ Auto-connexion échouée:', error.message);
+        // Ne pas propager l'erreur, retourner simplement false
+        return of(false);
+      })
+    );
+  }
+
+  /**
+   * Connexion utilisateur via API backend
    */
   login(identifiant: string, motDePasse: string): Observable<LoginResponse> {
-    // Mode mock - simuler une connexion réussie
-    return new Observable(observer => {
-      // Simuler un délai réseau
-      setTimeout(() => {
-        // Créer un utilisateur mock basé sur l'identifiant
-        const mockUsers: Record<string, User> = {
-          'chef.agence.test': {
-            id: '1',
-            identifiant: 'chef.agence.test',
-            nom: 'Chef',
-            prenom: 'Agence',
-            email: 'chef.agence@example.com',
-            role: 'CHEF_AGENCE'
-          },
-          'agent.test': {
-            id: '2',
-            identifiant: 'agent.test',
-            nom: 'Agent',
-            prenom: 'Simple',
-            email: 'agent@example.com',
-            role: 'AGENT',
-            managerId: '1' // Subordonné au chef d'agence
-          },
-          'dg.test': {
-            id: '3',
-            identifiant: 'dg.test',
-            nom: 'Direction',
-            prenom: 'Générale',
-            email: 'dg@example.com',
-            role: 'DG'
-          },
-          'rh.test': {
-            id: '4',
-            identifiant: 'rh.test',
-            nom: 'Ressources',
-            prenom: 'Humaines',
-            email: 'rh@example.com',
-            role: 'RH'
-          },
-          'comptable.test': {
-            id: '5',
-            identifiant: 'comptable.test',
-            nom: 'Comptable',
-            prenom: 'Principal',
-            email: 'comptable@example.com',
-            role: 'COMPTABLE'
-          },
-          'admin.test': {
-            id: '6',
-            identifiant: 'admin.test',
-            nom: 'Administrateur',
-            prenom: 'Système',
-            email: 'admin@example.com',
-            role: 'ADMIN'
-          },
-          'responsable.copec.test': {
-            id: '7',
-            identifiant: 'responsable.copec.test',
-            nom: 'Directeur',
-            prenom: 'Services',
-            email: 'responsable.copec@example.com',
-            role: 'RESPONSABLE_COPEC'
-          },
-          'agent2.test': {
-            id: '8',
-            identifiant: 'agent2.test',
-            nom: 'Agent',
-            prenom: 'Deuxième',
-            email: 'agent2@example.com',
-            role: 'AGENT',
-            managerId: '1' // Aussi subordonné au chef d'agence
-          },
-          'chef.service.test': {
-            id: '9',
-            identifiant: 'chef.service.test',
-            nom: 'Chef',
-            prenom: 'Service',
-            email: 'chef.service@example.com',
-            role: 'CHEF_AGENCE',
-            managerId: '7' // Subordonné au Directeur des Services
-          }
-        };
+    const loginUrl = `${this.apiUrl}/auth/login/`;
 
-        const user = mockUsers[identifiant];
-        
-        if (user && motDePasse.length >= 6) {
-          // Connexion réussie
-          const response: LoginResponse = {
-            access_token: 'mock_token_' + Date.now(),
-            refresh_token: 'mock_refresh_' + Date.now(),
-            user: user,
-            expires_in: 3600
-          };
-          
-          // Stocker les tokens et l'utilisateur
-          this.storeTokens(response.access_token, response.refresh_token);
-          this.storeUser(response.user);
+    return this.http.post<LoginResponse>(loginUrl, {
+      identifiant,
+      password: motDePasse
+    }).pipe(
+      tap(response => {
+        console.log('💾 AuthService: Login réussi, stockage des tokens...');
+
+        if (this.isBrowser && response.access && response.refresh) {
+          // Stocker les tokens dans localStorage
+          localStorage.setItem('access_token', response.access);
+          localStorage.setItem('refresh_token', response.refresh);
+          localStorage.setItem('current_user', JSON.stringify(response.user));
+
+          // Mettre à jour le BehaviorSubject
           this.currentUserSubject.next(response.user);
-          
-          observer.next(response);
+
+          // 💾 DEBUG: Confirmation du stockage
+          console.log('💾 AuthService: Tokens stockés - Access:', response.access ? 'OUI' : 'NON', 'Refresh:', response.refresh ? 'OUI' : 'NON');
+          console.log('👤 AuthService: Utilisateur connecté:', response.user.first_name, response.user.last_name);
         } else {
-          // Connexion échouée
-          observer.error({
-            status: 401,
-            error: { message: 'Identifiant ou mot de passe incorrect' }
-          });
+          console.error('❌ AuthService: Réponse de login invalide - tokens manquants');
         }
-        
-        observer.complete();
-      }, 500); // Délai de 500ms pour simuler le réseau
-    });
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ AuthService: Erreur de connexion:', error);
+        throw error;
+      })
+    );
   }
 
   /**
    * Déconnexion
    */
   logout(): void {
-    // Appeler l'API de déconnexion (optionnel)
-    this.http.post(`${this.apiUrl}/logout`, {}).subscribe();
+    // Appeler l'API de déconnexion avec le refresh token
+    const refreshToken = this.getRefreshToken();
+    if (refreshToken) {
+      this.http.post(`${this.apiUrl}/auth/logout/`, {
+        refresh_token: refreshToken
+      }).subscribe({
+        next: () => console.log('✅ AuthService: Déconnexion côté serveur réussie'),
+        error: (error) => console.warn('⚠️ AuthService: Erreur déconnexion côté serveur:', error)
+      });
+    }
 
     // Nettoyer le localStorage
     if (this.isBrowser) {
@@ -209,10 +342,10 @@ export class AuthService {
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('current_user');
     }
-    
+
     // Réinitialiser le BehaviorSubject
     this.currentUserSubject.next(null);
-    
+
     // Rediriger vers login
     this.router.navigate(['/auth/login']);
   }
@@ -220,27 +353,56 @@ export class AuthService {
   /**
    * Rafraîchir le token
    */
-  refreshToken(): Observable<{ access_token: string }> {
+  refreshToken(): Observable<{ access: string }> {
     const refreshToken = this.getRefreshToken();
-    
-    return this.http.post<{ access_token: string }>(`${this.apiUrl}/refresh`, {
-      refresh_token: refreshToken
-    }).pipe(
+    if (!refreshToken) throw new Error('No refresh token');
+  
+    return this.http.post<{ access: string }>(
+      `${environment.apiUrl}/auth/token/refresh/`, 
+      { refresh: refreshToken }
+    ).pipe(
       tap(response => {
-        this.storeTokens(response.access_token, refreshToken!);
+        localStorage.setItem('access_token', response.access);
       })
     );
   }
 
   /**
-   * Vérifier si l'utilisateur est connecté
+   * Vérifier si l'utilisateur est connecté (version améliorée)
    */
   isLoggedIn(): boolean {
-    const token = this.getAccessToken();
-    if (!token) return false;
+    if (!this.isBrowser) {
+      console.log('isLoggedIn: Pas en mode navigateur');
+      return false;
+    }
 
-    // Vérifier si le token n'est pas expiré
-    return !this.isTokenExpired(token);
+    // Vérifier d'abord la présence d'un utilisateur dans le BehaviorSubject
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      console.log('isLoggedIn: Aucun utilisateur dans BehaviorSubject');
+      return false;
+    }
+
+    const token = localStorage.getItem('access_token');
+    console.log('isLoggedIn - Token d\'accès présent:', !!token);
+
+    if (!token) {
+      console.log('isLoggedIn: Aucun token d\'accès trouvé');
+      return false;
+    }
+
+    // Vérifier si le token est expiré avec une marge de sécurité
+    const isExpired = this.isTokenExpired(token);
+    console.log('isLoggedIn - Token expiré:', isExpired);
+
+    if (isExpired) {
+      console.log('isLoggedIn: Token expiré, nettoyage...');
+      this.logout();
+      return false;
+    }
+
+    console.log('isLoggedIn: Utilisateur connecté et token valide');
+    return true;
   }
 
   /**
@@ -254,8 +416,7 @@ export class AuthService {
    * Obtenir le rôle de l'utilisateur
    */
   getUserRole(): UserRole | null {
-    const user = this.getCurrentUser();
-    return user ? user.role : null;
+    return this.currentUserSubject.value?.role || null;
   }
 
   /**
@@ -276,103 +437,11 @@ export class AuthService {
   /**
    * Obtenir les subordonnés directs d'un utilisateur
    */
-  getSubordinates(userId?: string): User[] {
+  getSubordinates(userId?: string): Observable<User[]> {
     const targetUserId = userId || this.getCurrentUser()?.id;
-    if (!targetUserId) return [];
+    if (!targetUserId) return of([]);
 
-    const allUsers = this.getAllMockUsers();
-    return allUsers.filter(user => user.managerId === targetUserId);
-  }
-
-  /**
-   * Vérifier si un utilisateur est le manager d'un autre
-   */
-  isManagerOf(managerId: string, subordinateId: string): boolean {
-    const subordinate = this.getAllMockUsers().find(u => u.id === subordinateId);
-    return subordinate?.managerId === managerId;
-  }
-
-  /**
-   * Obtenir tous les utilisateurs mock (pour développement)
-   */
-  private getAllMockUsers(): User[] {
-    return [
-      {
-        id: '1',
-        identifiant: 'chef.agence.test',
-        nom: 'Chef',
-        prenom: 'Agence',
-        email: 'chef.agence@example.com',
-        role: 'CHEF_AGENCE'
-      },
-      {
-        id: '2',
-        identifiant: 'agent.test',
-        nom: 'Agent',
-        prenom: 'Simple',
-        email: 'agent@example.com',
-        role: 'AGENT',
-        managerId: '1' // Subordonné au chef d'agence
-      },
-      {
-        id: '3',
-        identifiant: 'dg.test',
-        nom: 'Direction',
-        prenom: 'Générale',
-        email: 'dg@example.com',
-        role: 'DG'
-      },
-      {
-        id: '4',
-        identifiant: 'rh.test',
-        nom: 'Ressources',
-        prenom: 'Humaines',
-        email: 'rh@example.com',
-        role: 'RH'
-      },
-      {
-        id: '5',
-        identifiant: 'comptable.test',
-        nom: 'Comptable',
-        prenom: 'Principal',
-        email: 'comptable@example.com',
-        role: 'COMPTABLE'
-      },
-      {
-        id: '6',
-        identifiant: 'admin.test',
-        nom: 'Administrateur',
-        prenom: 'Système',
-        email: 'admin@example.com',
-        role: 'ADMIN'
-      },
-      {
-        id: '7',
-        identifiant: 'responsable.copec.test',
-        nom: 'Directeur',
-        prenom: 'Services',
-        email: 'responsable.copec@example.com',
-        role: 'RESPONSABLE_COPEC'
-      },
-      {
-        id: '8',
-        identifiant: 'agent2.test',
-        nom: 'Agent',
-        prenom: 'Deuxième',
-        email: 'agent2@example.com',
-        role: 'AGENT',
-        managerId: '1' // Aussi subordonné au chef d'agence
-      },
-      {
-        id: '9',
-        identifiant: 'chef.service.test',
-        nom: 'Chef',
-        prenom: 'Service',
-        email: 'chef.service@example.com',
-        role: 'CHEF_AGENCE',
-        managerId: '7' // Subordonné au Directeur des Services
-      }
-    ];
+    return this.http.get<User[]>(`${environment.apiUrl}/users/subordinates`);
   }
 
   /**
@@ -380,7 +449,12 @@ export class AuthService {
    */
   getAccessToken(): string | null {
     if (!this.isBrowser) return null;
-    return localStorage.getItem('access_token');
+
+    const token = localStorage.getItem('access_token');
+    // 🔓 DEBUG: Token récupéré du localStorage
+    console.log('🔓 AuthService: getAccessToken() - Token du localStorage:', token ? 'OUI' : 'NON');
+
+    return token;
   }
 
   /**
@@ -396,6 +470,7 @@ export class AuthService {
    */
   private storeTokens(accessToken: string, refreshToken: string): void {
     if (!this.isBrowser) return;
+    
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('refresh_token', refreshToken);
   }
@@ -405,58 +480,56 @@ export class AuthService {
    */
   private storeUser(user: User): void {
     if (!this.isBrowser) return;
+    
     localStorage.setItem('current_user', JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 
   /**
-   * Récupérer l'utilisateur du storage
+   * Récupérer l'utilisateur du stockage
    */
   private getUserFromStorage(): User | null {
     if (!this.isBrowser) return null;
-    const userJson = localStorage.getItem('current_user');
-    return userJson ? JSON.parse(userJson) : null;
+    
+    const userStr = localStorage.getItem('current_user');
+    return userStr ? JSON.parse(userStr) : null;
   }
 
   /**
    * Vérifier si le token est expiré
    */
   private isTokenExpired(token: string): boolean {
-    if (!this.isBrowser) return true;
-    if (token === 'dev') return false;
     try {
-      // Décoder le JWT (simple version sans library)
       const payload = JSON.parse(atob(token.split('.')[1]));
-      const expirationDate = new Date(payload.exp * 1000);
-      return expirationDate < new Date();
-    } catch (error) {
+      const expiry = payload.exp;
+      return (Math.floor((new Date).getTime() / 1000)) >= expiry;
+    } catch (e) {
       return true;
     }
   }
 
   /**
-   * Changer le mot de passe
+   * Obtenir le profil de l'utilisateur
    */
-  changePassword(oldPassword: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/change-password`, {
-      old_password: oldPassword,
-      new_password: newPassword
-    });
-  }
-
-  /**
-   * Demander la réinitialisation du mot de passe
-   */
-  forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
-  }
-
-  /**
-   * Réinitialiser le mot de passe
-   */
-  resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reset-password`, {
-      token,
-      new_password: newPassword
-    });
+  getUserProfile(): Observable<any> {
+    const role = this.getUserRole();
+    if (!role) {
+      return this.http.get(`${this.apiUrl}/users/me/`);
+    }
+    
+    const endpointMap: Record<string, string> = {
+      'AGENT': 'agents/me',
+      'CHEF_AGENCE': 'chefs-agence/me',
+      'RESPONSABLE_COPEC': 'responsables-copec/me',
+      'DG': 'dg/me',
+      'RH': 'rh/me',
+      'COMPTABLE': 'comptables/me',
+      'DIRECTEUR_FINANCES': 'directeurs-finances/me',
+      'CHAUFFEUR': 'chauffeurs/me',
+      'ADMIN': 'admins/me'
+    };
+  
+    const endpoint = endpointMap[role] || 'users/me/';
+    return this.http.get(`${this.apiUrl}/users/${endpoint}`);
   }
 }

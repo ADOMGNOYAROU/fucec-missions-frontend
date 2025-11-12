@@ -7,6 +7,18 @@ import {
   financeGuard,
   allStaffGuard 
 } from './core/guards/role.guard';
+import { UserRole } from './core/services/auth.service';
+
+// Import des composants de profil
+import { AgentProfileComponent } from './features/profiles/agent-profile/agent-profile.component';
+import { ChefAgenceProfileComponent } from './features/profiles/chef-agence-profile/chef-agence-profile.component';
+import { ResponsableCopecProfileComponent } from './features/profiles/responsable-copec-profile/responsable-copec-profile.component';
+import { DgProfileComponent } from './features/profiles/dg-profile/dg-profile.component';
+import { RhProfileComponent } from './features/profiles/rh-profile/rh-profile.component';
+import { ComptableProfileComponent } from './features/profiles/comptable-profile/comptable-profile.component';
+import { DirecteurFinancesProfileComponent } from './features/profiles/directeur-finances-profile/directeur-finances-profile.component';
+import { ChauffeurProfileComponent } from './features/profiles/chauffeur-profile/chauffeur-profile.component';
+import { AdminProfileComponent } from './features/profiles/admin-profile/admin-profile.component';
 
 export const routes: Routes = [
   // Auth routes (accessible seulement si non connecté)
@@ -60,10 +72,10 @@ export const routes: Routes = [
       },
 
       {
-  path: 'validations',
-  loadChildren: () => import('./features/validations/validations.routes').then(m => m.VALIDATIONS_ROUTES),
-  canActivate: [roleGuard(['DG', 'RH', 'CHEF_AGENCE', 'RESPONSABLE_COPEC'])]
-}, 
+        path: 'validations',
+        loadChildren: () => import('./features/validations/validations.routes').then(m => m.VALIDATIONS_ROUTES),
+        canActivate: [roleGuard([UserRole.DG, UserRole.RH, UserRole.CHEF_AGENCE, UserRole.RESPONSABLE_COPEC])]
+      }, 
 
       // Finance (accessible à RH, Comptabilité, DG)
       {
@@ -91,25 +103,37 @@ export const routes: Routes = [
 
       // Profil utilisateur
       {
-        path: 'profil',
-        canActivate: [allStaffGuard],
-        loadComponent: () => import('./features/profil/profil.component')
-          .then(m => m.ProfilComponent)
+        path: 'profile',
+        loadComponent: () => import('./shared/components/profile-layout')
+          .then(m => m.ProfileLayoutComponent),
+        canActivate: [authGuard],
+        children: [
+          { path: '', redirectTo: 'agent', pathMatch: 'full' }, // Redirect to agent by default
+          { path: 'agent', component: AgentProfileComponent },
+          { path: 'chef-agence', component: ChefAgenceProfileComponent },
+          { path: 'responsable-copec', component: ResponsableCopecProfileComponent },
+          { path: 'dg', component: DgProfileComponent },
+          { path: 'rh', component: RhProfileComponent },
+          { path: 'comptable', component: ComptableProfileComponent },
+          { path: 'directeur-finances', component: DirecteurFinancesProfileComponent },
+          { path: 'chauffeur', component: ChauffeurProfileComponent },
+          { path: 'admin', component: AdminProfileComponent }
+        ]
+      },
+
+      // Page d'accès refusé
+      {
+        path: 'acces-refuse',
+        loadComponent: () => import('./shared/components/acces-refuse/acces-refuse.component')
+          .then(m => m.AccesRefuseComponent)
+      },
+
+      // Page 404
+      {
+        path: '**',
+        loadComponent: () => import('./shared/components/not-found/not-found.component')
+          .then(m => m.NotFoundComponent)
       }
     ]
-  },
-
-  // Page d'accès refusé
-  {
-    path: 'acces-refuse',
-    loadComponent: () => import('./shared/components/acces-refuse/acces-refuse.component')
-      .then(m => m.AccesRefuseComponent)
-  },
-
-  // Page 404
-  {
-    path: '**',
-    loadComponent: () => import('./shared/components/not-found/not-found.component')
-      .then(m => m.NotFoundComponent)
   }
 ];
