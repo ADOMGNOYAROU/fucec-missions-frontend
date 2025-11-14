@@ -5,6 +5,8 @@ import {
   adminGuard, 
   validateurGuard, 
   financeGuard,
+  justificatifsGuard,
+  responsableCopecGuard,
   allStaffGuard 
 } from './core/guards/role.guard';
 
@@ -59,6 +61,14 @@ export const routes: Routes = [
           .then(m => m.MISSIONS_ROUTES)
       },
 
+      // Création de mission pour chef service
+      {
+        path: 'chef-service/missions/create',
+        canActivate: [responsableCopecGuard],
+        loadComponent: () => import('./features/missions/chef-service-mission-create/chef-service-mission-create.component')
+          .then(m => m.ChefServiceMissionCreateComponent)
+      },
+
       {
   path: 'validations',
   loadChildren: () => import('./features/validations/validations.routes').then(m => m.VALIDATIONS_ROUTES),
@@ -74,10 +84,10 @@ export const routes: Routes = [
           .then(m => m.FINANCE_ROUTES)
       },
 
-      // Justificatifs (accessible à tous)
+      // Justificatifs
       {
         path: 'justificatifs',
-        canActivate: [allStaffGuard],
+        canActivate: [justificatifsGuard],
         loadChildren: () => import('./features/justificatifs/justificatifs.routes')
           .then(m => m.JUSTIFICATIFS_ROUTES)
       },

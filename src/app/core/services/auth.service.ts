@@ -81,7 +81,7 @@ export class AuthService {
   /**
    * Connexion utilisateur (mode mock pour développement)
    */
-  login(identifiant: string, motDePasse: string): Observable<LoginResponse> {
+  login(identifiant: string, password: string): Observable<LoginResponse> {
     // Mode mock - simuler une connexion réussie
     return new Observable(observer => {
       // Simuler un délai réseau
@@ -147,8 +147,8 @@ export class AuthService {
         };
 
         const user = mockUsers[identifiant];
-        
-        if (user && motDePasse.length >= 6) {
+
+        if (user && password.length >= 6) {
           // Connexion réussie
           const response: LoginResponse = {
             access_token: 'mock_token_' + Date.now(),
@@ -156,12 +156,12 @@ export class AuthService {
             user: user,
             expires_in: 3600
           };
-          
+
           // Stocker les tokens et l'utilisateur
           this.storeTokens(response.access_token, response.refresh_token);
           this.storeUser(response.user);
           this.currentUserSubject.next(response.user);
-          
+
           observer.next(response);
         } else {
           // Connexion échouée
@@ -170,7 +170,7 @@ export class AuthService {
             error: { message: 'Identifiant ou mot de passe incorrect' }
           });
         }
-        
+
         observer.complete();
       }, 500); // Délai de 500ms pour simuler le réseau
     });

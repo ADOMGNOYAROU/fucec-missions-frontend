@@ -2,6 +2,42 @@
 
 .justifs-page { max-width: 1200px; margin: 0 auto; }
 
+.quick-upload {
+  .upload-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-2xl;
+    border: 2px dashed $border-color;
+    border-radius: $radius-lg;
+    background: $bg-light;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: $primary-color;
+      background: rgba($primary-color, 0.05);
+    }
+
+    svg {
+      color: $text-muted;
+      margin-bottom: $spacing-md;
+    }
+
+    p {
+      margin: 0 0 $spacing-xs 0;
+      color: $text-primary;
+      font-weight: $font-weight-medium;
+    }
+
+    small {
+      color: $text-muted;
+      font-size: $font-size-sm;
+    }
+  }
+}
+
 .filters {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

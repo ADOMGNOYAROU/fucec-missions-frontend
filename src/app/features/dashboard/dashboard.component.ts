@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService, User } from '../../core/services/auth.service';
+import { MissionService } from '../missions/services/mission.service';
 
 // Interfaces temporaires (en attendant les vrais services)
 interface DashboardStats {
@@ -55,7 +56,7 @@ export class DashboardComponent implements OnInit {
   recentMissions: Mission[] = [];
   pendingValidations: Validation[] = [];
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router, private missionService: MissionService) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
@@ -66,7 +67,6 @@ export class DashboardComponent implements OnInit {
    * Charger les données du dashboard
    */
   loadDashboardData(): void {
-    // TODO: Remplacer par de vrais appels API
     this.loadStats();
     this.loadRecentMissions();
     
@@ -123,35 +123,9 @@ export class DashboardComponent implements OnInit {
    * Charger les validations en attente
    */
   private loadPendingValidations(): void {
-    // Données fictives
-    this.pendingValidations = [
-      {
-        id: '1',
-        mission: {
-          id: '1',
-          titre: 'Formation développeurs',
-          createur: {
-            prenom: 'Jean',
-            nom: 'DUPONT'
-          }
-        },
-        niveau: 'N1',
-        enRetard: false
-      },
-      {
-        id: '2',
-        mission: {
-          id: '2',
-          titre: 'Contrôle agence Sokodé',
-          createur: {
-            prenom: 'Marie',
-            nom: 'KOUASSI'
-          }
-        },
-        niveau: 'N2',
-        enRetard: true
-      }
-    ];
+    // TODO: Implémenter l'API des validations en attente
+    // Pour l'instant, laisser vide ou utiliser une valeur par défaut
+    this.pendingValidations = [];
   }
 
   /**
@@ -192,6 +166,24 @@ export class DashboardComponent implements OnInit {
       'caisse': 'caisse genérale'
     };
     return labels[niveau] || niveau;
+  }
+
+  /**
+   * Obtenir la route de création de mission selon le rôle
+   */
+  getCreateMissionRoute(): string {
+    console.log('Rôle actuel:', this.currentUser?.role);
+    if (this.authService.hasRole('RESPONSABLE_COPEC')) {
+      console.log('Route pour RESPONSABLE_COPEC: /chef-service/missions/create');
+      return '/chef-service/missions/create';
+    }
+    console.log('Route par défaut: /missions/create');
+    return '/missions/create';
+  }
+
+  navigateToRoute(route: string): void {
+    console.log('Navigation vers:', route);
+    this.router.navigate([route]);
   }
 
   /**

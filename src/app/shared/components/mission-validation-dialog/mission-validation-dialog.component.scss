@@ -1,0 +1,309 @@
+@import '../../../../styles/variables';
+
+.validation-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  backdrop-filter: blur(4px);
+}
+
+.validation-dialog {
+  background: $white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-xl;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: dialogSlideIn 0.3s ease-out;
+}
+
+@keyframes dialogSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Header
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-xl;
+  border-bottom: 1px solid $border-color;
+
+  .header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: $radius-full;
+    background: linear-gradient(135deg, $fucec-teal 0%, darken($fucec-teal, 10%) 100%);
+    color: $white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+    flex: 1;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-md;
+    color: $text-secondary;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: $bg-gray;
+      color: $text-primary;
+    }
+
+    svg { stroke-width: 2.5; }
+  }
+}
+
+// Mission Summary
+.mission-summary {
+  padding: $spacing-xl;
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md $spacing-lg;
+    margin-bottom: $spacing-lg;
+
+    @media (max-width: $breakpoint-md) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-sm $spacing-md;
+    background: $bg-light;
+    border-radius: $radius-md;
+
+    label {
+      font-weight: $font-weight-medium;
+      color: $text-secondary;
+      font-size: $font-size-sm;
+    }
+
+    span {
+      font-weight: $font-weight-semibold;
+      color: $text-primary;
+    }
+  }
+
+  .participants-section {
+    margin-top: $spacing-lg;
+
+    h4 {
+      margin: 0 0 $spacing-md 0;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $text-primary;
+    }
+
+    .participants-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: $spacing-sm;
+    }
+
+    .participant-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: $spacing-sm;
+      padding: $spacing-xs $spacing-sm;
+      background: $bg-gray;
+      border-radius: $radius-full;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+
+      .role-badge {
+        background: $fucec-teal;
+        color: $white;
+        padding: 0.125rem 0.375rem;
+        border-radius: $radius-sm;
+        font-size: 0.75rem;
+        font-weight: $font-weight-bold;
+      }
+    }
+  }
+}
+
+// Rejection Form
+.rejection-form {
+  padding: 0 $spacing-xl $spacing-xl;
+  border-top: 1px solid $border-color;
+
+  h4 {
+    margin: 0 0 $spacing-md 0;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+  }
+
+  .form-group {
+    margin-bottom: $spacing-md;
+
+    label {
+      display: block;
+      margin-bottom: $spacing-xs;
+      font-weight: $font-weight-medium;
+      color: $text-primary;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: $spacing-sm $spacing-md;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+      font-size: $font-size-base;
+      transition: border-color $transition-fast;
+
+      &:focus {
+        outline: none;
+        border-color: $fucec-teal;
+        box-shadow: 0 0 0 3px rgba($fucec-teal, 0.1);
+      }
+
+      &.ng-invalid.ng-touched {
+        border-color: $danger;
+      }
+
+      &::placeholder {
+        color: $text-muted;
+      }
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .error-message {
+      margin-top: $spacing-xs;
+      color: $danger;
+      font-size: $font-size-sm;
+    }
+  }
+}
+
+// Actions
+.dialog-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-xl;
+  border-top: 1px solid $border-color;
+  background: $bg-light;
+
+  .action-buttons {
+    display: flex;
+    gap: $spacing-md;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-lg;
+    border: none;
+    border-radius: $radius-lg;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: all $transition-fast;
+    text-decoration: none;
+
+    svg { stroke-width: 2; }
+
+    &.btn-secondary {
+      background: $text-secondary;
+      color: $white;
+
+      &:hover {
+        background: darken($text-secondary, 10%);
+      }
+    }
+
+    &.btn-success {
+      background: $success;
+      color: $white;
+
+      &:hover {
+        background: darken($success, 10%);
+        transform: translateY(-1px);
+        box-shadow: $shadow-md;
+      }
+    }
+
+    &.btn-danger {
+      background: $danger;
+      color: $white;
+
+      &:hover {
+        background: darken($danger, 10%);
+        transform: translateY(-1px);
+        box-shadow: $shadow-md;
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: $breakpoint-sm) {
+  .validation-dialog {
+    width: 95%;
+    margin: $spacing-md;
+  }
+
+  .dialog-header,
+  .mission-summary,
+  .rejection-form,
+  .dialog-actions {
+    padding-left: $spacing-lg;
+    padding-right: $spacing-lg;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: $spacing-md;
+
+    .action-buttons {
+      width: 100%;
+
+      .btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    .btn-secondary {
+      width: 100%;
+    }
+  }
+}

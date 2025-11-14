@@ -62,6 +62,7 @@ export class MainLayoutComponent implements OnInit {
     console.log('Rôle actuel:', this.currentUser?.role);
     console.log('canValidate() called, result:', this.canValidate());
     console.log('canAccessFinance() called, result:', this.canAccessFinance());
+    console.log('canAccessJustificatifs() called, result:', this.canAccessJustificatifs());
     console.log('isAdmin() called, result:', this.isAdmin());
     console.log('allStaffGuard should allow access for CHEF_AGENCE');
     console.log('Sidebar collapsed:', this.sidebarCollapsed);
@@ -161,6 +162,8 @@ export class MainLayoutComponent implements OnInit {
       this.pageTitle = 'Tableau de bord';
     } else if (url.includes('/missions/create')) {
       this.pageTitle = 'Nouvelle Mission';
+    } else if (url.includes('/chef-service/missions/create')) {
+      this.pageTitle = 'Nouvelle Mission (Chef Service)';
     } else if (url.includes('/missions')) {
       this.pageTitle = 'Mes Missions';
     } else if (url.includes('/validations')) {
@@ -210,6 +213,21 @@ export class MainLayoutComponent implements OnInit {
       'DIRECTEUR_FINANCES' as UserRole,
       'RH' as UserRole,
       'DG' as UserRole
+    ]);
+  }
+
+  /**
+   * Vérifier si l'utilisateur peut accéder aux justificatifs
+   */
+  canAccessJustificatifs(): boolean {
+    return this.authService.hasAnyRole([
+      'AGENT' as UserRole,
+      'CHEF_AGENCE' as UserRole,
+      'RESPONSABLE_COPEC' as UserRole,
+      'DG' as UserRole,
+      'RH' as UserRole,
+      'COMPTABLE' as UserRole,
+      'ADMIN' as UserRole
     ]);
   }
 

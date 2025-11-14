@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService, User, UserRole } from '../../../core/services/auth.service';
-import { MissionService } from '../services/mission.service';
-import { MissionValidationDialogComponent } from '../../../shared/components/mission-validation-dialog/mission-validation-dialog.component';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
 
 // Interfaces temporaires
@@ -23,20 +21,17 @@ interface Participant {
 }
 
 @Component({
-  selector: 'app-mission-create',
+  selector: 'app-chef-service-mission-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, MissionValidationDialogComponent],
-  templateUrl: './mission-create.component.html',
-  styleUrls: ['./mission-create.component.scss']
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  templateUrl: './chef-service-mission-create.component.html',
+  styleUrls: ['./chef-service-mission-create.component.scss'],
+  providers: [AuthService]
 })
-export class MissionCreateComponent implements OnInit, OnDestroy {
+export class ChefServiceMissionCreateComponent implements OnInit, OnDestroy {
   missionForm!: FormGroup;
   currentUser: User | null = null;
   submitting = false;
-
-  // Dialogue de validation
-  showValidationDialog = false;
-  missionDataForValidation: any = null;
 
   // Listes
   vehicules: Vehicule[] = [];
@@ -53,11 +48,11 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private missionService: MissionService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
+    console.log('ChefServiceMissionCreateComponent chargé');
     this.currentUser = this.authService.getCurrentUser();
     this.initForm();
     this.loadData();
@@ -142,72 +137,31 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Chargement initial des données
+   * Chargement initial des données (mock pour l'instant)
    */
   loadData(): void {
-    // TODO: Implémenter les APIs pour charger véhicules et chauffeurs
-    // Pour l'instant, laisser vide ou utiliser des valeurs par défaut
-    this.vehicules = [];
-    this.chauffeurs = [];
+    // TODO: Remplacer par des appels API réels
+    this.vehicules = [
+      { id: '1', immatriculation: 'TG-1234-AB', marque: 'Toyota', modele: 'Hilux' },
+      { id: '2', immatriculation: 'TG-5678-CD', marque: 'Nissan', modele: 'Navara' }
+    ];
+
+    this.chauffeurs = [
+      { id: '10', prenom: 'Jean', nom: 'K.', role: 'CHAUFFEUR' as UserRole },
+      { id: '11', prenom: 'Paul', nom: 'M.', role: 'CHAUFFEUR' as UserRole }
+    ] as unknown as User[];
   }
 
   /**
    * Actions / helpers utilisés dans le template
    */
   confirmSubmit(): void {
-    if (this.missionForm.invalid) {
-      this.missionForm.markAllAsTouched();
-      return;
-    }
-
-    // Préparer les données pour le dialogue de validation
-    const formData = this.missionForm.getRawValue();
-    this.missionDataForValidation = {
-      ...formData,
-      participants: this.selectedParticipants,
-      duree: this.calculerDuree()
-    };
-
-    // Ouvrir le dialogue de validation
-    this.showValidationDialog = true;
+    // Temporairement : soumettre directement sans boîte de dialogue
+    this.onSubmit();
   }
 
   cancelSubmit(): void {
     this.showConfirmDialog = false;
-  }
-
-  /**
-   * Gestionnaire pour la validation de la mission
-   */
-  onMissionValidate(status: string): void {
-    console.log('Mission validée avec statut:', status);
-    this.submitMission();
-  }
-
-  /**
-   * Gestionnaire pour le rejet de la mission
-   */
-  onMissionReject(rejectionData: { reason: string; comment?: string }): void {
-    console.log('Mission rejetée:', rejectionData);
-    alert(`Mission rejetée pour la raison suivante: ${rejectionData.reason}${rejectionData.comment ? '\nCommentaire: ' + rejectionData.comment : ''}`);
-
-    // Fermer le dialogue et retourner au formulaire
-    this.showValidationDialog = false;
-  }
-
-  /**
-   * Gestionnaire pour l'annulation du dialogue
-   */
-  onValidationCancel(): void {
-    this.showValidationDialog = false;
-  }
-
-  /**
-   * Soumettre la mission après validation
-   */
-  private submitMission(): void {
-    this.showValidationDialog = false;
-    this.onSubmit();
   }
 
   onSubmit(): void {
@@ -222,31 +176,12 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
       this.autoSaveEnabled = true; // Réactiver
       return;
     }
-
-    // Préparer les données pour l'API
-    const formData = this.missionForm.getRawValue();
-    const missionData = {
-      ...formData,
-      participants: this.selectedParticipants.map(p => p.id)
-    };
-
-    this.missionService.create(missionData).subscribe({
-      next: (response) => {
-        console.log('Mission créée avec succès:', response);
-        this.submitting = false;
-        this.autoSaveEnabled = true;
-        // Supprimer le brouillon après création réussie
-        localStorage.removeItem('missionDraft');
-        this.router.navigate(['/missions']);
-      },
-      error: (error) => {
-        console.error('Erreur lors de la création de la mission:', error);
-        this.submitting = false;
-        this.autoSaveEnabled = true;
-        // TODO: Afficher un message d'erreur à l'utilisateur
-        alert('Erreur lors de la création de la mission. Veuillez réessayer.');
-      }
-    });
+    // TODO: Remplacer par un appel API réel
+    setTimeout(() => {
+      this.submitting = false;
+      this.autoSaveEnabled = true; // Réactiver
+      this.router.navigate(['/missions']);
+    }, 500);
   }
 
   /**

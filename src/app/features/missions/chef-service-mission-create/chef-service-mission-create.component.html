@@ -1,4 +1,5 @@
 <div class="mission-create-container">
+  <h1>Test - Composant chargé</h1>
   <div class="form-header">
     <div class="header-content">
       <button class="btn-back" routerLink="/missions">
@@ -9,7 +10,7 @@
         Retour
       </button>
       <div class="header-title">
-        <h1>Nouvelle Demande d'Ordre de Mission</h1>
+        <h1>Nouvelle Demande d'Ordre de Mission (Chef Service)</h1>
         <p>Remplissez tous les champs requis pour créer votre demande</p>
         <div class="auto-save-indicator" *ngIf="missionForm.dirty">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -184,7 +185,7 @@
             <div class="participant-name">{{ participant.prenom }} {{ participant.nom }}</div>
             <div class="participant-role">{{ getRoleLabel(participant.role) }}</div>
           </div>
-          <button type="button" class="btn-remove" (click)="removeParticipant(i)" aria-label="Retirer ce participant">
+          <button type="button" class="btn-remove" (click)="removeParticipant(i)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -300,13 +301,15 @@
       </button>
     </div>
 
-    <!-- Boîte de dialogue de validation de mission -->
-    <app-mission-validation-dialog
-      [isVisible]="showValidationDialog"
-      [missionData]="missionDataForValidation"
-      (validate)="onMissionValidate($event)"
-      (reject)="onMissionReject($event)"
-      (cancel)="onValidationCancel()">
-    </app-mission-validation-dialog>
+    <!-- Boîte de dialogue de confirmation -->
+    <!-- <app-confirmation-dialog
+      *ngIf="showConfirmDialog"
+      title="Confirmer la soumission"
+      message="Êtes-vous sûr de vouloir soumettre cette demande de mission ? Une fois soumise, elle sera envoyée pour validation."
+      confirmText="Soumettre"
+      cancelText="Annuler"
+      (confirm)="onSubmit()"
+      (cancel)="cancelSubmit()">
+    </app-confirmation-dialog> -->
   </form>
 </div>

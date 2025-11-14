@@ -50,6 +50,31 @@
         <a appBtn variant="outline" routerLink="/justificatifs">Annuler</a>
         <button appBtn variant="primary" [disabled]="!files.length || loading" (click)="upload()">Importer</button>
       </div>
+
+      <!-- État de succès après upload -->
+      <div class="success-state" *ngIf="uploadSuccess">
+        <div class="success-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <h3>Justificatifs importés avec succès !</h3>
+        <p>{{ uploadedJustificatifs.length }} justificatif(s) prêt(s) à être soumis au comptable.</p>
+
+        <div class="success-actions">
+          <button appBtn variant="outline" (click)="continueLater()" [disabled]="loading">
+            Continuer plus tard
+          </button>
+          <button appBtn variant="primary" (click)="sendToComptable()" [disabled]="loading">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9"/>
+            </svg>
+            Envoyer au comptable
+          </button>
+        </div>
+      </div>
     </app-card-body>
   </app-card>
 </div>

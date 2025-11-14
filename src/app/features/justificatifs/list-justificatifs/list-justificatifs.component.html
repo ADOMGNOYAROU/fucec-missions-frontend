@@ -1,7 +1,35 @@
 <div class="justifs-page">
   <app-header [title]="'Justificatifs'">
-    <a appBtn variant="primary" routerLink="/justificatifs/upload">Uploader</a>
+    <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png" multiple style="display: none;">
+    <button appBtn variant="primary" (click)="fileInput.click()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Uploader des fichiers
+    </button>
   </app-header>
+
+  <app-card>
+    <app-card-header>
+      <h2>Actions rapides</h2>
+    </app-card-header>
+    <app-card-body>
+      <div class="quick-upload">
+        <div class="upload-zone" (dragover)="onDragOver($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Cliquez ou glissez-déposez vos justificatifs ici</p>
+          <small>PDF, JPG, PNG (max 5 Mo chacun)</small>
+        </div>
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png" multiple style="display: none;">
+      </div>
+    </app-card-body>
+  </app-card>
 
   <app-card>
     <app-card-header>
@@ -56,6 +84,14 @@
           <div class="col"><app-badge [variant]="getStatusVariant(it.status)">{{ getStatusLabel(it.status) }}</app-badge></div>
           <div class="col">{{ it.createdAt | date:'dd/MM/yyyy' }}</div>
           <div class="col actions">
+            <button appBtn variant="outline" (click)="downloadFile(it.id)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Télécharger
+            </button>
             <button appBtn variant="outline" (click)="viewDetails(it.id)">Voir</button>
             <button appBtn variant="danger" (click)="openDelete(it.id)">Supprimer</button>
           </div>

@@ -73,3 +73,13 @@ export const allStaffGuard: CanActivateFn = roleGuard([
   'COMPTABLE',
   'ADMIN'
 ]);
+
+export const justificatifsGuard: CanActivateFn = roleGuard([
+  'AGENT',
+  'CHEF_AGENCE',
+  'RESPONSABLE_COPEC',
+  'DG',
+  'RH',
+  'COMPTABLE',
+  'ADMIN'
+]);

@@ -56,13 +56,21 @@ export class DetailsJustificatifComponent {
 
   download() {
     const id = this.route.snapshot.paramMap.get('id')!;
-    this.justificatifService.download(id).subscribe((blob) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = this.item?.nom || 'justificatif';
-      a.click();
-      URL.revokeObjectURL(url);
+    const filename = this.item?.filename || this.item?.name || 'justificatif';
+
+    this.justificatifService.download(id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => {
+        // Gérer l'erreur de téléchargement
+        console.error('Erreur lors du téléchargement');
+      }
     });
   }
 }

@@ -1,0 +1,254 @@
+@import '../../../../styles/variables';
+
+.mission-create-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: $spacing-2xl;
+}
+
+.form-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: linear-gradient(180deg, rgba($bg-secondary, 0.9), rgba($bg-secondary, 0.6));
+  backdrop-filter: saturate(180%) blur(10px);
+  border-bottom: 1px solid $border-color;
+  margin-bottom: $spacing-xl;
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+    padding: $spacing-lg 0;
+  }
+
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    background: transparent;
+    border: none;
+    color: $text-secondary;
+    font-weight: $font-weight-medium;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: $bg-gray;
+      color: $text-primary;
+    }
+
+    svg { stroke-width: 2.25; }
+  }
+
+  .header-title {
+    h1 {
+      margin: 0 0 $spacing-xs 0;
+      font-size: $font-size-3xl;
+      font-weight: $font-weight-bold;
+      color: $text-primary;
+    }
+    p {
+      margin: 0;
+      color: $text-secondary;
+    }
+
+    .auto-save-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: $spacing-xs;
+      margin-top: $spacing-sm;
+      padding: $spacing-xs $spacing-sm;
+      background: rgba($success, 0.1);
+      color: darken($success, 20%);
+      border-radius: $radius-md;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+
+      svg {
+        stroke-width: 2.5;
+      }
+    }
+  }
+}
+
+.form-section {
+  background: $white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-sm;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-xl;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+
+    .section-icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: $radius-md;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba($fucec-teal, 0.1) 0%, rgba($fucec-teal, 0.05) 100%);
+      color: $fucec-teal;
+      svg { stroke-width: 2; }
+    }
+
+    h2 {
+      margin: 0;
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-semibold;
+      color: $text-primary;
+    }
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $spacing-lg $spacing-xl;
+
+    .full-width { grid-column: 1 / -1; }
+
+    .form-group {
+      .required::after {
+        content: ' *';
+        color: $fucec-red;
+        font-weight: $font-weight-bold;
+      }
+    }
+  }
+}
+
+.info-box {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  background: $info-light;
+  color: darken($info, 20%);
+  svg { stroke-width: 2; }
+}
+
+.participants-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  .participant-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-lg;
+    background: $bg-light;
+    border-radius: $radius-lg;
+    border: 1px solid transparent;
+    transition: all $transition-fast;
+
+    &.creator {
+      background: linear-gradient(135deg, rgba($fucec-teal, 0.05) 0%, rgba($fucec-teal, 0.02) 100%);
+      border-color: rgba($fucec-teal, 0.25);
+    }
+
+    &:hover {
+      background: $white;
+      border-color: $fucec-teal;
+      box-shadow: $shadow-sm;
+    }
+
+    .participant-avatar {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: $radius-full;
+      background: $fucec-teal;
+      color: $white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: $font-weight-bold;
+    }
+
+    .participant-info {
+      flex: 1;
+      min-width: 0;
+      margin: 0 $spacing-md;
+
+      .participant-name { color: $text-primary; font-weight: $font-weight-semibold; }
+      .participant-role { color: $text-secondary; font-size: $font-size-sm; }
+    }
+
+    .badge-creator {
+      background: $success-light;
+      color: darken($success, 20%);
+      padding: 0.25rem 0.625rem;
+      border-radius: $radius-full;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-medium;
+    }
+
+    .btn-remove {
+      background: transparent;
+      border: none;
+      width: 2rem;
+      height: 2rem;
+      border-radius: $radius-md;
+      color: $danger;
+      cursor: pointer;
+      transition: all $transition-fast;
+      &:hover { background: $danger-light; color: darken($danger, 10%); }
+      svg { stroke-width: 2.25; }
+    }
+  }
+
+  .btn-add-participant {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-lg;
+    border-radius: $radius-lg;
+    background: $bg-gray;
+    color: $text-primary;
+    border: none;
+    cursor: pointer;
+    transition: all $transition-fast;
+    &:hover { background: darken($bg-gray, 5%); }
+  }
+}
+
+.budget-summary {
+  margin-top: $spacing-md;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $spacing-md;
+
+  .summary-item {
+    background: $bg-light;
+    border-radius: $radius-md;
+    padding: $spacing-md;
+    color: $text-secondary;
+
+    &.highlight {
+      background: $warning-light;
+      color: darken($warning, 20%);
+      font-weight: $font-weight-medium;
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: $spacing-md;
+  justify-content: space-between;
+  padding-top: $spacing-lg;
+  border-top: 1px solid $border-color;
+}
+
+@media (max-width: $breakpoint-lg) {
+  .form-section .form-grid { grid-template-columns: 1fr; }
+  .budget-summary { grid-template-columns: 1fr; }
+}

@@ -54,7 +54,42 @@
   margin-top: $spacing-xl;
 }
 
+.success-state {
+  text-align: center;
+  padding: $spacing-2xl $spacing-xl;
+  border-top: 1px solid $border-color;
+  margin-top: $spacing-xl;
+
+  .success-icon {
+    color: $success-color;
+    margin-bottom: $spacing-lg;
+
+    svg {
+      stroke-width: 2;
+    }
+  }
+
+  h3 {
+    color: $text-primary;
+    margin: $spacing-md 0 $spacing-sm 0;
+  }
+
+  p {
+    color: $text-secondary;
+    margin-bottom: $spacing-xl;
+  }
+
+  .success-actions {
+    display: flex;
+    justify-content: center;
+    gap: $spacing-md;
+    margin-top: $spacing-lg;
+  }
+}
+
 @media (max-width: $breakpoint-md) {
   .upload-page { max-width: 100%; }
   .dropzone { padding: $spacing-xl; }
+  .actions { flex-direction: column; }
+  .success-actions { flex-direction: column; }
 }

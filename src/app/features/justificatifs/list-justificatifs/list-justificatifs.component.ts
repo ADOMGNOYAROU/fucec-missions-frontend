@@ -113,8 +113,75 @@ export class ListJustificatifsComponent {
     });
   }
 
+  downloadFile(id: string | number) {
+    // Trouver le justificatif dans la liste pour obtenir le nom du fichier
+    const justificatif = this.items.find(item => item.id == id);
+    const filename = justificatif?.filename || justificatif?.name || `justificatif_${id}`;
+
+    this.loading = true;
+    this.justificatifService.download(id).subscribe({
+      next: (blob: Blob) => {
+        this.loading = false;
+        // Créer un lien temporaire pour le téléchargement
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        this.toast.success('Fichier téléchargé avec succès');
+      },
+      error: () => {
+        this.loading = false;
+        this.toast.error('Erreur lors du téléchargement du fichier');
+      }
+    });
+  }
+
   viewDetails(id: string | number) {
     this.router.navigate(['/justificatifs', id]);
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length) {
+      // Stocker les fichiers sélectionnés temporairement
+      const selectedFiles = Array.from(input.files);
+
+      // Rediriger vers la page d'upload avec les fichiers
+      // Pour l'instant, on navigue simplement vers la page d'upload
+      // Les fichiers devront être resélectionnés là-bas
+      this.router.navigate(['/justificatifs/upload'], {
+        queryParams: {
+          fromList: 'true'
+        }
+      });
+
+      // Réinitialiser l'input
+      input.value = '';
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.dataTransfer?.files?.length) {
+      // Simuler la sélection de fichiers pour déclencher la navigation vers la page d'upload
+      this.router.navigate(['/justificatifs/upload'], {
+        queryParams: {
+          fromList: 'true',
+          dragDrop: 'true'
+        }
+      });
+    }
   }
 
   getStatusVariant(status: string): 'BROUILLON' | 'EN_ATTENTE' | 'VALIDEE' | 'IN_PROGRESS' | 'CLOTUREE' | 'REJETEE' {

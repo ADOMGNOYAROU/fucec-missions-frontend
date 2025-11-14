@@ -39,6 +39,8 @@ export class UploadJustificatifsComponent {
   missionId: string | number | undefined = undefined;
   missionBudget: number | undefined = undefined;
   showConfirm = false;
+  uploadSuccess = false;
+  uploadedJustificatifs: any[] = [];
 
   get totalAmount(): number {
     return this.files.reduce((sum, f) => sum + (this.meta[f.name]?.amount || 0), 0);
@@ -133,17 +135,40 @@ export class UploadJustificatifsComponent {
     this.loading = true;
     const meta = this.files.map(f => ({ filename: f.name, category: this.meta[f.name]?.category || 'Autres', amount: Number(this.meta[f.name]?.amount || 0) }));
     this.justificatifService.upload(this.files, meta).subscribe({
-      next: () => {
+      next: (response: any) => {
         this.loading = false;
-        this.files = [];
-        this.meta = {};
-        this.toast.success('Justificatifs importés');
-        this.router.navigate(['/justificatifs']);
+        this.uploadSuccess = true;
+        // Stocker les justificatifs uploadés pour l'envoi au comptable
+        this.uploadedJustificatifs = response?.data || [];
+        this.toast.success('Justificatifs importés avec succès !');
+        // Garder les fichiers affichés pour permettre l'envoi au comptable
       },
       error: () => {
         this.loading = false;
         this.toast.error("Une erreur est survenue lors de l'import.");
       }
     });
+  }
+
+  sendToComptable(): void {
+    if (this.loading) return;
+    this.loading = true;
+
+    // Simuler l'envoi au comptable - en réalité, cela changerait le statut des justificatifs
+    this.justificatifService.submitToComptable(this.uploadedJustificatifs).subscribe({
+      next: () => {
+        this.loading = false;
+        this.toast.success('Justificatifs envoyés au comptable avec succès !');
+        this.router.navigate(['/justificatifs']);
+      },
+      error: () => {
+        this.loading = false;
+        this.toast.error('Erreur lors de l\'envoi au comptable.');
+      }
+    });
+  }
+
+  continueLater(): void {
+    this.router.navigate(['/justificatifs']);
   }
 }

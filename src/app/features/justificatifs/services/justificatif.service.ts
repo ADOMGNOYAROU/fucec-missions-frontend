@@ -104,8 +104,15 @@ export class JustificatifService {
   }
 
   download(id: string | number): Observable<Blob> {
-    // Mode mock - retourner un blob fictif
-    const mockBlob = new Blob(['Mock file content'], { type: 'application/pdf' });
-    return of(mockBlob).pipe(delay(500));
+    // Utiliser l'API réelle pour le téléchargement
+    return this.http.get(`${this.baseUrl}/${id}/download`, {
+      responseType: 'blob'
+    });
+  }
+
+  submitToComptable(justificatifs: any[]): Observable<any> {
+    // API pour soumettre les justificatifs au comptable
+    const payload = { justificatifs: justificatifs.map(j => j.id) };
+    return this.http.post(`${this.baseUrl}/submit-to-comptable`, payload);
   }
 }

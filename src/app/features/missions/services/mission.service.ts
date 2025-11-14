@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { delay, map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MissionService {
+
+  private apiUrl = `${environment.apiUrl}/missions`;
 
   constructor(private http: HttpClient) { }
 
@@ -133,5 +135,19 @@ export class MissionService {
     };
 
     return of(mockResponse).pipe(delay(300));
+  }
+
+  // Nouvelles méthodes pour les actions spécifiques
+  submit(id: string | number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/submit/`, {});
+  }
+
+  validate(id: string | number, decision: string, commentaire?: string): Observable<any> {
+    const payload = commentaire ? { commentaire } : {};
+    return this.http.post(`${this.apiUrl}/${id}/validate/${decision}/`, payload);
+  }
+
+  getStats(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/stats/`);
   }
 }

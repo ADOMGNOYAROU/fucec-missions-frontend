@@ -1,0 +1,120 @@
+<div class="validation-dialog-overlay" *ngIf="isVisible" (click)="onCancel()">
+  <div class="validation-dialog" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="dialog-header">
+      <div class="header-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M9 11l3 3L22 4"></path>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+      </div>
+      <h3>Détails de la Mission</h3>
+      <button class="close-btn" (click)="onCancel()" aria-label="Fermer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mission Summary -->
+    <div class="mission-summary" *ngIf="missionData">
+      <div class="summary-grid">
+        <div class="summary-item">
+          <label>Titre:</label>
+          <span>{{ missionData.titre }}</span>
+        </div>
+        <div class="summary-item">
+          <label>Type:</label>
+          <span>{{ missionData.type }}</span>
+        </div>
+        <div class="summary-item">
+          <label>Date début:</label>
+          <span>{{ missionData.dateDebut | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="summary-item">
+          <label>Date fin:</label>
+          <span>{{ missionData.dateFin | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="summary-item">
+          <label>Lieu:</label>
+          <span>{{ missionData.lieuMission }}</span>
+        </div>
+        <div class="summary-item">
+          <label>Budget:</label>
+          <span>{{ missionData.budgetEstime | number:'1.0-0' }} FCFA</span>
+        </div>
+      </div>
+
+      <div class="participants-section" *ngIf="missionData.participants?.length > 0">
+        <h4>Participants ({{ missionData.participants.length }})</h4>
+        <div class="participants-list">
+          <div class="participant-chip" *ngFor="let participant of missionData.participants">
+            {{ participant.prenom }} {{ participant.nom }}
+            <span class="role-badge">{{ participant.role }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rejection Form (only shown when rejecting) -->
+    <div class="rejection-form" *ngIf="isVisible">
+      <h4>Motif de rejet</h4>
+      <form [formGroup]="validationForm">
+        <div class="form-group">
+          <label for="reason">Raison du rejet *</label>
+          <select id="reason" formControlName="reason" class="form-control">
+            <option value="">Sélectionnez une raison</option>
+            <option value="budget_insuffisant">Budget insuffisant</option>
+            <option value="dates_invalides">Dates invalides</option>
+            <option value="informations_manquantes">Informations manquantes</option>
+            <option value="participants_invalides">Participants invalides</option>
+            <option value="autre">Autre raison</option>
+          </select>
+          <div class="error-message" *ngIf="reason?.invalid && reason?.touched">
+            La raison du rejet est requise (minimum 10 caractères)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="comment">Commentaire (optionnel)</label>
+          <textarea
+            id="comment"
+            formControlName="comment"
+            class="form-control"
+            rows="3"
+            placeholder="Ajoutez un commentaire détaillé..."
+          ></textarea>
+        </div>
+      </form>
+    </div>
+
+    <!-- Actions -->
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Annuler
+      </button>
+
+      <div class="action-buttons">
+        <button type="button" class="btn btn-danger" (click)="onReject()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          Rejeter
+        </button>
+
+        <button type="button" class="btn btn-success" (click)="onValidate()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Valider
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
