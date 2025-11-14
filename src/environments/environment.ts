@@ -25,10 +25,10 @@ export const environment = {
   devAutoLogin: true,
   devUser: {
     id: '1',
-    identifiant: 'chef.service',
-    nom: 'Dupont',
-    prenom: 'Jean',
-    email: 'chef.service@example.com',
-    role: 'RESPONSABLE_COPEC',
+    identifiant: 'agent.test',
+    nom: 'Test',
+    prenom: 'Agent',
+    email: 'agent.test@example.com',
+    role: 'AGENT',
   }
 };
