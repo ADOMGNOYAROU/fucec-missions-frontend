@@ -7,7 +7,7 @@ import { environment } from '../../../../environments/environment';
   providedIn: 'root'
 })
 export class FinanceService {
-  private baseUrl = `${environment.apiUrl}/${environment.apiVersion}`;
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 

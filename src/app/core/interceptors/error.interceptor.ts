@@ -15,33 +15,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Erreur 401 - Token expiré ou invalide
-      if (error.status === 401 && !req.url.includes('/auth/login')) {
-        const refresh$ = authService.refreshToken();
-
-        if (!refresh$) {
-          authService.logout();
-          return throwError(() => error);
-        }
-
-        // Tenter de rafraîchir le token
-        return refresh$.pipe(
-          switchMap(() => {
-            // Réessayer la requête avec le nouveau token
-            const token = authService.getAccessToken();
-            const clonedReq = req.clone({
-              setHeaders: {
-                Authorization: `Bearer ${token}`
-              }
-            });
-            return next(clonedReq);
-          }),
-          catchError(refreshError => {
-            // Si le refresh échoue, déconnecter l'utilisateur
-            authService.logout();
-            return throwError(() => refreshError);
-          })
-        );
+      // On laisse auth.interceptor gérer les erreurs 401
+      if (error.status === 401) {
+        return throwError(() => error);
       }
 
       // Erreur 403 - Accès refusé

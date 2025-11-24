@@ -1,0 +1,121 @@
+/* Styles pour les boîtes de dialogue Material */
+
+// Style de base pour le conteneur de dialogue
+.mat-dialog-container {
+  position: relative;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: 0 11px 15px -7px rgba(0,0,0,.2), 
+              0 24px 38px 3px rgba(0,0,0,.14), 
+              0 9px 46px 8px rgba(0,0,0,.12) !important;
+  
+  // Animation d'entrée
+  animation: dialog-enter 0.3s ease-out;
+}
+
+// Animation d'entrée de la boîte de dialogue
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Style pour le contenu de la boîte de dialogue
+.mat-dialog-content {
+  margin: 0;
+  padding: 24px;
+  max-height: 65vh;
+  overflow-y: auto;
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+// Style pour les actions de la boîte de dialogue
+.mat-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 24px 24px;
+  margin: 0;
+  min-height: 60px;
+  
+  button {
+    margin-left: 8px;
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+}
+
+// Style pour le backdrop (arrière-plan sombre)
+.cdk-overlay-dark-backdrop, .custom-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(3px);
+  transition: opacity 0.3s ease-in-out;
+  
+  // Animation de fondu à l'ouverture
+  &.cdk-overlay-backdrop-showing {
+    opacity: 1;
+  }
+  
+  // Animation de fermeture
+  &.cdk-overlay-backdrop-exiting {
+    opacity: 0;
+  }
+}
+
+// Positionnement du panneau de dialogue
+.cdk-overlay-pane {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1000 !important;
+}
+
+// Styles spécifiques pour les boîtes de dialogue de mission
+.mission-dialog {
+  .mat-dialog-container {
+    width: 550px;
+    max-width: 100%;
+  }
+  
+  .mat-dialog-title {
+    padding: 20px 24px 16px;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #1a237e;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .mat-dialog-content {
+    padding: 20px 24px;
+  }
+}
+
+// Styles responsifs
+@media (max-width: 600px) {
+  .cdk-overlay-pane {
+    width: 95% !important;
+    max-width: 95% !important;
+  }
+  
+  .mat-dialog-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+}

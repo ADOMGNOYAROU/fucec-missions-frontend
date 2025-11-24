@@ -2,7 +2,6 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:8000/api',  // URL de votre backend Django
-  apiVersion: 'v1',
   appName: 'FUCEC Missions',
   appVersion: '1.0.0',
   
@@ -22,7 +21,7 @@ export const environment = {
   slaDelaiJustificatifs: 72, // heures
 
   // Dev helpers
-  devAutoLogin: true,
+  devAutoLogin: false,
   devUser: {
     id: '1',
     identifiant: 'agent.test',

@@ -139,6 +139,16 @@ export class DashboardComponent implements OnInit {
     ]);
   }
 
+  canCreateMission(): boolean {
+    return this.authService.hasAnyRole([
+      'AGENT' as any,
+      'CHEF_AGENCE' as any,
+      'RESPONSABLE_COPEC' as any,
+      'DG' as any,
+      'ADMIN' as any
+    ]);
+  }
+
   /**
    * Obtenir le label du statut
    */

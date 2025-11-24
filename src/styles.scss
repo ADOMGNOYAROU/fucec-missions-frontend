@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 // Importer les variables
+@import './styles/dialog';
 @import './styles/variables';
 
 // Reset CSS
@@ -199,6 +200,34 @@ label {
 .p-3 { padding: $spacing-md !important; }
 .p-4 { padding: $spacing-lg !important; }
 .p-5 { padding: $spacing-xl !important; }
+
+// Styles pour les notifications (snackbar)
+.snackbar-success {
+  background-color: #4caf50 !important; // Vert
+  color: white !important;
+
+  .mat-button-wrapper {
+    color: white !important;
+  }
+}
+
+.snackbar-error {
+  background-color: #f44336 !important; // Rouge
+  color: white !important;
+
+  .mat-button-wrapper {
+    color: white !important;
+  }
+}
+
+.snackbar-warning {
+  background-color: #ff9800 !important; // Orange
+  color: white !important;
+
+  .mat-button-wrapper {
+    color: white !important;
+  }
+}
 
 // Flexbox
 .d-flex { display: flex !important; }

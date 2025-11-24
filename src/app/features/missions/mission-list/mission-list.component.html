@@ -1,7 +1,7 @@
 <div class="missions-list-page">
   <div class="page-header">
     <h1>Mes Missions</h1>
-    <div class="actions">
+    <div class="actions" *ngIf="canCreateMission()">
       <a appBtn variant="primary" routerLink="/missions/create">Créer une Mission</a>
     </div>
   </div>
@@ -46,7 +46,17 @@
           </app-badge>
         </div>
         <div class="col actions">
-          <a appBtn variant="outline" [routerLink]="['/missions', mission.id]">Détails</a>
+          <button 
+            mat-button 
+            color="primary"
+            (click)="openValidationDialog(mission, $event)"
+            [disabled]="!canSubmitMission()"
+            matTooltip="Soumettre la mission pour validation"
+            [class.cursor-not-allowed]="!canSubmitMission()"
+            [class.opacity-50]="!canSubmitMission()">
+            <mat-icon>send</mat-icon>
+            <span>Soumettre</span>
+          </button>
         </div>
       </div>
     </ng-container>

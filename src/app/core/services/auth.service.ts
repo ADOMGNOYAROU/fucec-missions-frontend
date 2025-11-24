@@ -1,23 +1,20 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
 // Interfaces
 export interface User {
-  id: string;
+  id: number;
   identifiant: string;
-  nom: string;
-  prenom: string;
+  first_name: string;
+  last_name: string;
+  prenom?: string;
+  nom?: string;
   email: string;
   role: UserRole;
-  entite?: {
-    id: string;
-    nom: string;
-    type: string;
-  };
   telephone?: string;
   matricule?: string;
 }
@@ -34,17 +31,16 @@ export type UserRole =
   | 'CHAUFFEUR';
 
 export interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
+  access: string;
+  refresh: string;
   user: User;
-  expires_in: number;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/auth`;
+  private apiUrl = `${environment.apiUrl}/users`;
   
   // BehaviorSubject pour suivre l'état de connexion
   private currentUserSubject = new BehaviorSubject<User | null>(null);
@@ -62,7 +58,7 @@ export class AuthService {
       if (u) this.currentUserSubject.next(u);
       // Dev auto-login (only if enabled)
       if (!u && environment.devAutoLogin) {
-        const devUser = environment.devUser as unknown as User;
+        const devUser = this.normalizeUser(environment.devUser as unknown as User);
         this.storeUser(devUser);
         // store a safe dev token
         this.storeTokens('dev', 'dev');
@@ -79,109 +75,33 @@ export class AuthService {
   }
 
   /**
-   * Connexion utilisateur (mode mock pour développement)
+   * Connexion utilisateur réelle via l'API Django
    */
   login(identifiant: string, password: string): Observable<LoginResponse> {
-    // Mode mock - simuler une connexion réussie
-    return new Observable(observer => {
-      // Simuler un délai réseau
-      setTimeout(() => {
-        // Créer un utilisateur mock basé sur l'identifiant
-        const mockUsers: Record<string, User> = {
-          'chef.agence.test': {
-            id: '1',
-            identifiant: 'chef.agence.test',
-            nom: 'Chef',
-            prenom: 'Agence',
-            email: 'chef.agence@example.com',
-            role: 'CHEF_AGENCE'
-          },
-          'agent.test': {
-            id: '2',
-            identifiant: 'agent.test',
-            nom: 'Agent',
-            prenom: 'Simple',
-            email: 'agent@example.com',
-            role: 'AGENT'
-          },
-          'dg.test': {
-            id: '3',
-            identifiant: 'dg.test',
-            nom: 'Direction',
-            prenom: 'Générale',
-            email: 'dg@example.com',
-            role: 'DG'
-          },
-          'rh.test': {
-            id: '4',
-            identifiant: 'rh.test',
-            nom: 'Ressources',
-            prenom: 'Humaines',
-            email: 'rh@example.com',
-            role: 'RH'
-          },
-          'comptable.test': {
-            id: '5',
-            identifiant: 'comptable.test',
-            nom: 'Comptable',
-            prenom: 'Principal',
-            email: 'comptable@example.com',
-            role: 'COMPTABLE'
-          },
-          'admin.test': {
-            id: '6',
-            identifiant: 'admin.test',
-            nom: 'Administrateur',
-            prenom: 'Système',
-            email: 'admin@example.com',
-            role: 'ADMIN'
-          },
-          'responsable.copec.test': {
-            id: '7',
-            identifiant: 'responsable.copec.test',
-            nom: 'Directeur',
-            prenom: 'Services',
-            email: 'responsable.copec@example.com',
-            role: 'RESPONSABLE_COPEC'
-          }
-        };
-
-        const user = mockUsers[identifiant];
-
-        if (user && password.length >= 6) {
-          // Connexion réussie
-          const response: LoginResponse = {
-            access_token: 'mock_token_' + Date.now(),
-            refresh_token: 'mock_refresh_' + Date.now(),
-            user: user,
-            expires_in: 3600
-          };
-
-          // Stocker les tokens et l'utilisateur
-          this.storeTokens(response.access_token, response.refresh_token);
-          this.storeUser(response.user);
-          this.currentUserSubject.next(response.user);
-
-          observer.next(response);
-        } else {
-          // Connexion échouée
-          observer.error({
-            status: 401,
-            error: { message: 'Identifiant ou mot de passe incorrect' }
-          });
-        }
-
-        observer.complete();
-      }, 500); // Délai de 500ms pour simuler le réseau
-    });
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login/`, {
+      identifiant,
+      password,
+    }).pipe(
+      tap((response) => {
+        this.storeTokens(response.access, response.refresh);
+        const normalizedUser = this.normalizeUser(response.user);
+        this.storeUser(normalizedUser);
+        this.currentUserSubject.next(normalizedUser);
+      })
+    );
   }
 
   /**
    * Déconnexion
    */
   logout(): void {
-    // Appeler l'API de déconnexion (optionnel)
-    this.http.post(`${this.apiUrl}/logout`, {}).subscribe();
+    const refresh = this.getRefreshToken();
+
+    if (refresh) {
+      this.http
+        .post(`${this.apiUrl}/auth/logout/`, { refresh_token: refresh })
+        .subscribe({ error: () => {/* on ignore les erreurs de logout */} });
+    }
 
     // Nettoyer le localStorage
     if (this.isBrowser) {
@@ -200,27 +120,31 @@ export class AuthService {
   /**
    * Rafraîchir le token
    */
-  refreshToken(): Observable<{ access_token: string }> {
+  refreshToken(): Observable<{ access: string }> | null {
     const refreshToken = this.getRefreshToken();
-    
-    return this.http.post<{ access_token: string }>(`${this.apiUrl}/refresh`, {
-      refresh_token: refreshToken
-    }).pipe(
-      tap(response => {
-        this.storeTokens(response.access_token, refreshToken!);
+    if (!refreshToken) {
+      return null;
+    }
+
+    return this.http
+      .post<{ access: string }>(`${this.apiUrl}/auth/refresh/`, {
+        refresh: refreshToken,
       })
-    );
+      .pipe(
+        tap((response) => {
+          this.storeTokens(response.access, refreshToken);
+        })
+      );
   }
 
   /**
    * Vérifier si l'utilisateur est connecté
    */
   isLoggedIn(): boolean {
+    if (!this.isBrowser) return false;
     const token = this.getAccessToken();
-    if (!token) return false;
-
-    // Vérifier si le token n'est pas expiré
-    return !this.isTokenExpired(token);
+    const user = this.getCurrentUser();
+    return !!(token && user && !this.isTokenExpired(token));
   }
 
   /**
@@ -248,9 +172,15 @@ export class AuthService {
   /**
    * Vérifier si l'utilisateur a l'un des rôles
    */
-  hasAnyRole(roles: UserRole[]): boolean {
+  hasAnyRole(roles: (UserRole | string)[]): boolean {
     const userRole = this.getUserRole();
-    return userRole ? roles.includes(userRole) : false;
+    if (!userRole) return false;
+    
+    // Convertir tous les rôles en chaînes pour la comparaison
+    const normalizedUserRole = userRole.toString().toUpperCase();
+    const normalizedRoles = roles.map(role => role.toString().toUpperCase());
+    
+    return normalizedRoles.includes(normalizedUserRole);
   }
 
   /**
@@ -292,7 +222,18 @@ export class AuthService {
   private getUserFromStorage(): User | null {
     if (!this.isBrowser) return null;
     const userJson = localStorage.getItem('current_user');
-    return userJson ? JSON.parse(userJson) : null;
+    return userJson ? this.normalizeUser(JSON.parse(userJson) as User) : null;
+  }
+
+  /**
+   * Harmonise les champs nom/prénom issus du backend
+   */
+  private normalizeUser(user: User): User {
+    return {
+      ...user,
+      prenom: user.prenom ?? user.first_name,
+      nom: user.nom ?? user.last_name,
+    };
   }
 
   /**
@@ -302,7 +243,6 @@ export class AuthService {
     if (!this.isBrowser) return true;
     if (token === 'dev') return false;
     try {
-      // Décoder le JWT (simple version sans library)
       const payload = JSON.parse(atob(token.split('.')[1]));
       const expirationDate = new Date(payload.exp * 1000);
       return expirationDate < new Date();
@@ -315,9 +255,9 @@ export class AuthService {
    * Changer le mot de passe
    */
   changePassword(oldPassword: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/change-password`, {
+    return this.http.post(`${this.apiUrl}/profile/change-password/`, {
       old_password: oldPassword,
-      new_password: newPassword
+      new_password: newPassword,
     });
   }
 
@@ -325,16 +265,6 @@ export class AuthService {
    * Demander la réinitialisation du mot de passe
    */
   forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
-  }
-
-  /**
-   * Réinitialiser le mot de passe
-   */
-  resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reset-password`, {
-      token,
-      new_password: newPassword
-    });
+    return this.http.post(`${this.apiUrl}/auth/forgot-password/`, { email });
   }
 }

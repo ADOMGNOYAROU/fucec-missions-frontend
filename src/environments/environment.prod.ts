@@ -2,7 +2,6 @@
 export const environment = {
   production: true,
   apiUrl: 'https://api.fucec-missions.tg/api',  // URL production
-  apiVersion: 'v1',
   appName: 'FUCEC Missions',
   appVersion: '1.0.0',
   

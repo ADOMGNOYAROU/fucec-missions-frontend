@@ -1,12 +1,11 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/guards/auth.guard';
-import { roleGuard } from './core/guards/role.guard';
 import { 
+  roleGuard,
   adminGuard, 
   validateurGuard, 
   financeGuard,
   justificatifsGuard,
-  responsableCopecGuard,
   allStaffGuard 
 } from './core/guards/role.guard';
 
@@ -31,6 +30,13 @@ export const routes: Routes = [
     ]
   },
 
+  // Page d'accès refusé
+  {
+    path: 'acces-refuse',
+    loadComponent: () => import('./core/pages/access-denied/access-denied.component')
+      .then(m => m.AccessDeniedComponent)
+  },
+
   // Routes protégées (nécessite authentification)
   {
     path: '',
@@ -53,10 +59,9 @@ export const routes: Routes = [
           .then(m => m.DashboardComponent)
       },
 
-      // Missions (accessible à tous)
+      // Routes des missions
       {
         path: 'missions',
-        canActivate: [allStaffGuard],
         loadChildren: () => import('./features/missions/missions.routes')
           .then(m => m.MISSIONS_ROUTES)
       },
@@ -64,19 +69,21 @@ export const routes: Routes = [
       // Création de mission pour chef service
       {
         path: 'chef-service/missions/create',
-        canActivate: [responsableCopecGuard],
+        canActivate: [roleGuard],
+        data: { roles: ['RESPONSABLE_COPEC', 'ADMIN'] },
         loadComponent: () => import('./features/missions/chef-service-mission-create/chef-service-mission-create.component')
           .then(m => m.ChefServiceMissionCreateComponent)
       },
 
+      // Validations (pour les rôles de validation)
       {
-  path: 'validations',
-  loadChildren: () => import('./features/validations/validations.routes').then(m => m.VALIDATIONS_ROUTES),
-  canActivate: [roleGuard],
-  data: { roles: ['DG', 'RH', 'CHEF_AGENCE', 'RESPONSABLE_COPEC'] }
-}, 
+        path: 'validations',
+        canActivate: [validateurGuard],
+        loadChildren: () => import('./features/validations/validations.routes')
+          .then(m => m.VALIDATIONS_ROUTES)
+      },
 
-      // Finance (accessible à RH, Comptabilité, DG)
+      // Finance (accessible à RH, Comptabilité, DG, Directeur Financier)
       {
         path: 'finance',
         canActivate: [financeGuard],
@@ -84,7 +91,7 @@ export const routes: Routes = [
           .then(m => m.FINANCE_ROUTES)
       },
 
-      // Justificatifs
+      // Justificatifs (accessible à la plupart des utilisateurs)
       {
         path: 'justificatifs',
         canActivate: [justificatifsGuard],
@@ -106,21 +113,21 @@ export const routes: Routes = [
         canActivate: [allStaffGuard],
         loadComponent: () => import('./features/profil/profil.component')
           .then(m => m.ProfilComponent)
+      },
+
+      // Page 404 (doit être la dernière route)
+      {
+        path: '**',
+        loadComponent: () => import('./core/pages/not-found/not-found.component')
+          .then(m => m.NotFoundComponent)
       }
     ]
   },
-
-  // Page d'accès refusé
-  {
-    path: 'acces-refuse',
-    loadComponent: () => import('./shared/components/acces-refuse/acces-refuse.component')
-      .then(m => m.AccesRefuseComponent)
-  },
-
-  // Page 404
+  
+  // Page 404 pour les routes non protégées
   {
     path: '**',
-    loadComponent: () => import('./shared/components/not-found/not-found.component')
+    loadComponent: () => import('./core/pages/not-found/not-found.component')
       .then(m => m.NotFoundComponent)
   }
 ];

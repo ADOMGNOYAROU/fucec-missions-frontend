@@ -61,6 +61,7 @@ export class MainLayoutComponent implements OnInit {
     console.log('Utilisateur actuel:', this.currentUser);
     console.log('Rôle actuel:', this.currentUser?.role);
     console.log('canValidate() called, result:', this.canValidate());
+    console.log('canCreateMission() called, result:', this.canCreateMission());
     console.log('canAccessFinance() called, result:', this.canAccessFinance());
     console.log('canAccessJustificatifs() called, result:', this.canAccessJustificatifs());
     console.log('isAdmin() called, result:', this.isAdmin());
@@ -195,13 +196,26 @@ export class MainLayoutComponent implements OnInit {
    * Vérifier si l'utilisateur peut valider
    */
   canValidate(): boolean {
-    const result = this.authService.hasAnyRole([
-      'CHEF_AGENCE' as UserRole,
-      'RESPONSABLE_COPEC' as UserRole,
-      'DG' as UserRole
+    return this.authService.hasAnyRole([
+      'CHEF_AGENCE',
+      'RESPONSABLE_COPEC',
+      'DG',
+      'ADMIN' // Les admins peuvent tout faire
     ]);
-    console.log('canValidate() called, result:', result);
-    return result;
+  }
+
+  /**
+   * Vérifier si l'utilisateur peut créer une mission
+   */
+  canCreateMission(): boolean {
+    return this.authService.hasAnyRole([
+      'AGENT',
+      'CHEF_AGENCE',
+      'RESPONSABLE_COPEC',
+      'DG',
+      'ADMIN',
+      'RH'
+    ]);
   }
 
   /**
@@ -209,10 +223,11 @@ export class MainLayoutComponent implements OnInit {
    */
   canAccessFinance(): boolean {
     return this.authService.hasAnyRole([
-      'COMPTABLE' as UserRole,
-      'DIRECTEUR_FINANCES' as UserRole,
-      'RH' as UserRole,
-      'DG' as UserRole
+      'COMPTABLE',
+      'DIRECTEUR_FINANCES',
+      'RH',
+      'DG',
+      'ADMIN'
     ]);
   }
 
@@ -221,21 +236,22 @@ export class MainLayoutComponent implements OnInit {
    */
   canAccessJustificatifs(): boolean {
     return this.authService.hasAnyRole([
-      'AGENT' as UserRole,
-      'CHEF_AGENCE' as UserRole,
-      'RESPONSABLE_COPEC' as UserRole,
-      'DG' as UserRole,
-      'RH' as UserRole,
-      'COMPTABLE' as UserRole,
-      'ADMIN' as UserRole
+      'AGENT',
+      'CHEF_AGENCE',
+      'RESPONSABLE_COPEC',
+      'DG',
+      'RH',
+      'COMPTABLE',
+      'ADMIN',
+      'DIRECTEUR_FINANCES'
     ]);
   }
 
   /**
-   * Vérifier si l'utilisateur est admin
+   * Vérifier si l'utilisateur peut accéder à l'administration
    */
   isAdmin(): boolean {
-    return this.authService.hasRole('ADMIN' as UserRole);
+    return this.authService.hasAnyRole(['ADMIN']);
   }
 
   /**

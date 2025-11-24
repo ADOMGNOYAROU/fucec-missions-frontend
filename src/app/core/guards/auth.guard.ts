@@ -10,32 +10,44 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Dev bypass - force dev login if needed (frontend only mode)
-  if (environment.devAutoLogin) {
-    // Force dev user login if not already logged in
-    if (!authService.isLoggedIn()) {
-      // Check if we're in browser environment
-      if (typeof window !== 'undefined') {
-        const devUser = environment.devUser as any;
-        localStorage.setItem('current_user', JSON.stringify(devUser));
-        localStorage.setItem('access_token', 'dev');
-        localStorage.setItem('refresh_token', 'dev');
-        authService['currentUserSubject'].next(devUser);
-      }
+  // Mode développement - connexion automatique si activé
+  if (environment.devAutoLogin && !authService.isLoggedIn() && typeof window !== 'undefined') {
+    const devUser = environment.devUser as any;
+    if (devUser) {
+      // Création d'un utilisateur compatible avec l'interface User
+      const normalizedUser = {
+        id: devUser.id || 1,
+        identifiant: devUser.identifiant || 'dev',
+        first_name: devUser.first_name || devUser.prenom || 'Développeur',
+        last_name: devUser.last_name || devUser.nom || 'Local',
+        prenom: devUser.prenom || devUser.first_name || 'Développeur',
+        nom: devUser.nom || devUser.last_name || 'Local',
+        email: devUser.email || 'dev@example.com',
+        role: devUser.role || 'ADMIN',
+        telephone: devUser.telephone || '',
+        matricule: devUser.matricule || ''
+      };
+
+      // Utilisation de localStorage directement pour éviter les problèmes de visibilité
+      localStorage.setItem('current_user', JSON.stringify(normalizedUser));
+      localStorage.setItem('access_token', 'dev_access_token');
+      localStorage.setItem('refresh_token', 'dev_refresh_token');
+      
+      // Forcer le rafraîchissement de l'état d'authentification
+      authService['currentUserSubject'].next(normalizedUser);
+      return true;
     }
-    return true;
   }
 
+  // Vérifier si l'utilisateur est connecté
   if (authService.isLoggedIn()) {
     return true;
   }
 
-  // Frontend only mode - redirect to login
-  router.navigate(['/auth/login'], {
+  // Rediriger vers la page de connexion avec l'URL de retour
+  return router.createUrlTree(['/auth/login'], {
     queryParams: { returnUrl: state.url }
   });
-  
-  return false;
 };
 
 /**
@@ -50,6 +62,5 @@ export const guestGuard: CanActivateFn = (route, state) => {
   }
 
   // Rediriger vers le dashboard si déjà connecté
-  router.navigate(['/dashboard']);
-  return false;
+  return router.createUrlTree(['/dashboard']);
 };

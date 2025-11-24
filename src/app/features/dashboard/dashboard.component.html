@@ -5,7 +5,7 @@
       <h1>Bienvenue, {{ currentUser?.prenom }} ! 👋</h1>
       <p>Voici un aperçu de vos missions et activités récentes</p>
     </div>
-    <button class="btn btn-primary" (click)="navigateToRoute(getCreateMissionRoute())">
+    <button class="btn btn-primary" *ngIf="canCreateMission()" (click)="navigateToRoute(getCreateMissionRoute())">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -175,7 +175,7 @@
   <div class="quick-actions">
     <h2>Actions Rapides</h2>
     <div class="actions-grid">
-      <button class="action-card" (click)="navigateToRoute(getCreateMissionRoute())">
+      <button class="action-card" *ngIf="canCreateMission()" (click)="navigateToRoute(getCreateMissionRoute())">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
