@@ -32,31 +32,44 @@ export class MainLayoutComponent implements OnInit {
 
   /**
    * Forcer le rechargement de l'utilisateur dev (pour le développement)
+   * NE DOIT ÊTRE UTILISÉ QUE SI devAutoLogin EST ACTIVÉ
    */
   private forceDevReload(): void {
-    if (typeof window !== 'undefined') {
-      // Vider l'ancien utilisateur
-      localStorage.removeItem('current_user');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      
-      // Forcer le rechargement de l'utilisateur dev
-      if (environment.devAutoLogin && !this.authService.getCurrentUser()) {
-        const devUser = environment.devUser as unknown as User;
-        localStorage.setItem('current_user', JSON.stringify(devUser));
-        localStorage.setItem('access_token', 'dev');
-        localStorage.setItem('refresh_token', 'dev');
-        this.authService['currentUserSubject'].next(devUser);
-      }
+    // SEULEMENT si devAutoLogin est activé ET qu'on est dans le navigateur
+    if (!environment.devAutoLogin || typeof window === 'undefined') {
+      return; // Ne rien faire si pas en mode dev auto-login
+    }
+    
+    // Vérifier si on a déjà un utilisateur réel connecté (avec un vrai token JWT)
+    const existingToken = localStorage.getItem('access_token');
+    if (existingToken && existingToken !== 'dev' && existingToken.startsWith('eyJ')) {
+      console.log('[MainLayout] Utilisateur réel détecté, skip dev reload');
+      return; // Ne pas écraser une vraie session utilisateur
+    }
+    
+    // Seulement si pas d'utilisateur, charger l'utilisateur dev
+    if (!this.authService.getCurrentUser()) {
+      console.log('[MainLayout] Mode dev auto-login activé, chargement utilisateur dev');
+      const devUser = environment.devUser as unknown as User;
+      localStorage.setItem('current_user', JSON.stringify(devUser));
+      localStorage.setItem('access_token', 'dev');
+      localStorage.setItem('refresh_token', 'dev');
+      this.authService.updateCurrentUser(devUser);
     }
   }
 
   ngOnInit(): void {
-    // Forcer le rechargement de l'utilisateur dev
+    // Forcer le rechargement de l'utilisateur dev (SEULEMENT si devAutoLogin est activé)
     this.forceDevReload();
     
     // Récupérer l'utilisateur courant
     this.currentUser = this.authService.getCurrentUser();
+    
+    // Mettre à jour l'utilisateur via l'observable
+    if (this.currentUser) {
+      this.authService.updateCurrentUser(this.currentUser);
+    }
+    
     console.log('=== DEBUG MAIN LAYOUT ===');
     console.log('Utilisateur actuel:', this.currentUser);
     console.log('Rôle actuel:', this.currentUser?.role);
@@ -286,8 +299,7 @@ export class MainLayoutComponent implements OnInit {
    * Déconnexion de l'utilisateur
    */
   logout(): void {
-    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      this.authService.logout();
-    }
+    this.authService.logoutUser();
+    this.router.navigate(['/login']);
   }
 }

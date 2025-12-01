@@ -1,153 +1,201 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { delay, map } from 'rxjs/operators';
+import { HttpClient, HttpParams, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../../app/core/services/auth.service';
+
+export interface Mission {
+  id?: number;
+  // Ajoutez ici les autres propriétés d'une mission
+}
+
+export interface Vehicule {
+  id: string;
+  immatriculation: string;
+  marque: string;
+  modele: string;
+  disponible: boolean;
+}
+
+export interface Chauffeur {
+  id: string;
+  prenom: string;
+  nom: string;
+  email: string;
+  role: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class MissionService {
+  private apiUrl = `${environment.apiUrl}/missions/`; // Correspond à /api/missions/
 
-  private apiUrl = `${environment.apiUrl}/missions`;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) { }
 
-  getOne(id: string | number): Observable<any> {
-    // Mode mock - retourner une mission fictive
-    const mockMission = {
-      id: id,
-      title: `Mission ${id}`,
-      description: 'Mission de formation et développement',
-      status: 'EN_COURS',
-      createdAt: '2025-01-15',
-      creator: {
-        id: 1,
-        nom: 'Agent',
-        prenom: 'Simple'
-      },
-      intervenants: [
-        {
-          id: 1,
-          nom: 'Agent',
-          prenom: 'Simple',
-          role: 'AGENT'
+  /**
+   * Récupère la liste des véhicules disponibles
+   */
+  getAllVehicles(): Observable<Vehicule[]> {
+    return this.http.get<Vehicule[]>(`${environment.apiUrl}/vehicules/`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Récupère la liste des chauffeurs disponibles
+   */
+  getAllDrivers(): Observable<Chauffeur[]> {
+    return this.http.get<Chauffeur[]>(`${environment.apiUrl}/chauffeurs/`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Crée les en-têtes HTTP avec le token d'authentification
+   */
+  private getAuthHeaders() {
+    const token = this.authService.getToken();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
+  /**
+   * Gère les erreurs HTTP
+   */
+  private handleError(error: HttpErrorResponse) {
+    if (error.status === 401) {
+      // Déconnexion si non authentifié
+      this.authService.logout();
+    }
+    return throwError(() => error);
+  }
+
+  /**
+   * Récupère une mission par son ID
+   * @param id L'identifiant de la mission (nombre ou chaîne)
+   */
+  getOne(id: string | number): Observable<Mission> {
+    // Convertir en nombre si c'est une chaîne numérique
+    const missionId = typeof id === 'string' ? parseInt(id, 10) : id;
+    return this.http.get<Mission>(`${this.apiUrl}${missionId}/`, { 
+      headers: this.getAuthHeaders() 
+    }).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Liste les missions avec des filtres optionnels
+   */
+  list(params: any = {}): Observable<{count: number, results: Mission[]}> {
+    let httpParams = new HttpParams();
+    
+    // Ajouter les paramètres de requête s'ils sont fournis
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key] !== null && params[key] !== undefined) {
+          httpParams = httpParams.append(key, params[key].toString());
         }
-      ],
-      justificatifs: [
-        {
-          id: 1,
-          filename: 'Justificatif.pdf',
-          category: 'Transport',
-          amount: 150000
-        }
-      ]
-    };
-
-    return of(mockMission).pipe(delay(300));
+      });
+    }
+    
+    return this.http.get<{count: number, results: Mission[]}>(this.apiUrl, { 
+      params: httpParams,
+      headers: this.getAuthHeaders()
+    }).pipe(
+      catchError(this.handleError.bind(this))
+    );
   }
 
-  list(params?: any): Observable<any> {
-    // Mode mock - retourner une liste de missions fictives
-    const mockMissions = {
-      data: [
-        {
-          id: 1,
-          title: 'Mission de formation',
-          description: 'Formation sur Angular avancé',
-          status: 'EN_ATTENTE',
-          date: '2025-11-10',
-          location: 'Lomé',
-          amount: 250000,
-          creator: {
-            id: 1,
-            nom: 'Agent',
-            prenom: 'Test'
-          }
-        },
-        {
-          id: 2,
-          title: 'Audit interne',
-          description: 'Audit des procédures RH',
-          status: 'VALIDEE',
-          date: '2025-11-05',
-          location: 'Kara',
-          amount: 180000,
-          creator: {
-            id: 1,
-            nom: 'Agent',
-            prenom: 'Test'
-          }
-        },
-        {
-          id: 3,
-          title: 'Réunion de coordination',
-          description: 'Réunion avec les partenaires',
-          status: 'EN_COURS',
-          date: '2025-11-15',
-          location: 'Sokodé',
-          amount: 320000,
-          creator: {
-            id: 1,
-            nom: 'Agent',
-            prenom: 'Test'
-          }
-        }
-      ],
-      pagination: {
-        total: 3,
-        page: 1,
-        limit: 10,
-        totalPages: 1
-      },
-      total: 3
-    };
-
-    return of(mockMissions).pipe(delay(300));
+  /**
+   * Crée une nouvelle mission
+   */
+  create(missionData: Partial<Mission>): Observable<Mission> {
+    return this.http.post<Mission>(this.apiUrl, missionData, { 
+      headers: this.getAuthHeaders() 
+    }).pipe(
+      catchError(this.handleError.bind(this))
+    );
   }
 
-  create(data: any): Observable<any> {
-    // Mode mock - simuler la création
-    const mockResponse = {
-      success: true,
-      message: 'Mission créée avec succès',
-      id: Date.now()
-    };
-
-    return of(mockResponse).pipe(delay(500));
+  /**
+   * Met à jour une mission existante
+   * @param id L'identifiant de la mission (nombre ou chaîne)
+   * @param data Les données à mettre à jour
+   */
+  update(id: string | number, data: Partial<Mission>): Observable<Mission> {
+    const missionId = typeof id === 'string' ? parseInt(id, 10) : id;
+    return this.http.patch<Mission>(`${this.apiUrl}${missionId}/`, data, { 
+      headers: this.getAuthHeaders() 
+    }).pipe(
+      catchError(this.handleError.bind(this))
+    );
   }
 
-  update(id: string | number, data: any): Observable<any> {
-    // Mode mock - simuler la mise à jour
-    const mockResponse = {
-      success: true,
-      message: 'Mission mise à jour avec succès'
-    };
-
-    return of(mockResponse).pipe(delay(300));
+  /**
+   * Supprime une mission
+   * @param id L'identifiant de la mission (nombre ou chaîne)
+   */
+  delete(id: string | number): Observable<void> {
+    const missionId = typeof id === 'string' ? parseInt(id, 10) : id;
+    return this.http.delete<void>(`${this.apiUrl}${missionId}/`, { 
+      headers: this.getAuthHeaders() 
+    }).pipe(
+      catchError(this.handleError.bind(this))
+    );
   }
 
-  delete(id: string | number): Observable<any> {
-    // Mode mock - simuler la suppression
-    const mockResponse = {
-      success: true,
-      message: 'Mission supprimée avec succès'
-    };
-
-    return of(mockResponse).pipe(delay(300));
+  /**
+   * Soumet une mission pour validation
+   * @param id L'identifiant de la mission (nombre ou chaîne)
+   */
+  submit(id: string | number): Observable<Mission> {
+    const missionId = typeof id === 'string' ? parseInt(id, 10) : id;
+    return this.http.post<Mission>(
+      `${this.apiUrl}${missionId}/submit/`,
+      {},
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      catchError(this.handleError.bind(this))
+    );
   }
 
-  // Nouvelles méthodes pour les actions spécifiques
-  submit(id: string | number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${id}/submit/`, {});
+  /**
+   * Déclare le retour d'une mission
+   * @param id L'identifiant de la mission (nombre ou chaîne)
+   */
+  declareReturn(id: string | number): Observable<Mission> {
+    const missionId = typeof id === 'string' ? parseInt(id, 10) : id;
+    return this.http.post<Mission>(
+      `${this.apiUrl}${missionId}/declare-return/`,
+      {},
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      catchError(this.handleError.bind(this))
+    );
   }
 
-  validate(id: string | number, decision: string, commentaire?: string): Observable<any> {
-    const payload = commentaire ? { commentaire } : {};
-    return this.http.post(`${this.apiUrl}/${id}/validate/${decision}/`, payload);
-  }
-
-  getStats(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/stats/`);
+  /**
+   * Soumet les justificatifs d'une mission
+   * @param id L'identifiant de la mission (nombre ou chaîne)
+   * @param justificatifs La liste des justificatifs à soumettre
+   */
+  submitJustificatifs(id: string | number, justificatifs: any[]): Observable<Mission> {
+    const missionId = typeof id === 'string' ? parseInt(id, 10) : id;
+    return this.http.post<Mission>(
+      `${this.apiUrl}${missionId}/submit-justificatifs/`,
+      { justificatifs },
+      { headers: this.getAuthHeaders() }
+    ).pipe(
+      catchError(this.handleError.bind(this))
+    );
   }
 }

@@ -1,7 +1,7 @@
 // src/environments/environment.ts (Development)
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000/api',  // URL de votre backend Django
+  apiUrl: 'http://localhost:8000/api',  // URL de base de l'API Django
   apiVersion: 'v1',
   appName: 'FUCEC Missions',
   appVersion: '1.0.0',
@@ -22,13 +22,14 @@ export const environment = {
   slaDelaiJustificatifs: 72, // heures
 
   // Dev helpers
-  devAutoLogin: true,
+  devAutoLogin: false,  // Désactivé pour forcer la connexion réelle
   devUser: {
     id: '1',
-    identifiant: 'chef.service',
-    nom: 'Dupont',
-    prenom: 'Jean',
-    email: 'chef.service@example.com',
-    role: 'RESPONSABLE_COPEC',
+    identifiant: 'admin',  // Remplacez par un identifiant existant
+    nom: 'Admin',
+    prenom: 'Système',
+    email: 'admin@example.com',
+    role: 'ADMIN',
+    password: 'admin123'  // Mot de passe pour le mode développement
   }
 };

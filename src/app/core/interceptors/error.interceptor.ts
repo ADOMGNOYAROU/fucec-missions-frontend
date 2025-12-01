@@ -18,10 +18,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       // Erreur 401 - Token expiré ou invalide
       if (error.status === 401 && !req.url.includes('/auth/login')) {
         // Tenter de rafraîchir le token
-        return authService.refreshToken().pipe(
+        return authService.refreshAccessToken().pipe(
           switchMap(() => {
             // Réessayer la requête avec le nouveau token
-            const token = authService.getAccessToken();
+            const token = authService.accessToken;
+            if (!token) {
+              throw new Error('No access token available');
+            }
             const clonedReq = req.clone({
               setHeaders: {
                 Authorization: `Bearer ${token}`

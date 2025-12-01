@@ -1,38 +1,50 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService, User, UserRole } from '../../../core/services/auth.service';
 import { MissionService } from '../services/mission.service';
 import { MissionValidationDialogComponent } from '../../../shared/components/mission-validation-dialog/mission-validation-dialog.component';
-import { debounceTime, Subject, takeUntil } from 'rxjs';
+import { debounceTime, Subject, takeUntil, finalize } from 'rxjs';
 
-// Interfaces temporaires
-interface Vehicule {
+// Interfaces
+export interface Vehicule {
   id: string;
   immatriculation: string;
   marque: string;
   modele: string;
+  disponible: boolean;
 }
 
-interface Participant {
+export interface Participant {
   id: string;
   prenom: string;
   nom: string;
   role: UserRole;
+  email: string;
 }
 
 @Component({
   selector: 'app-mission-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, MissionValidationDialogComponent],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    ReactiveFormsModule, 
+    RouterModule, 
+    MissionValidationDialogComponent
+  ],
   templateUrl: './mission-create.component.html',
   styleUrls: ['./mission-create.component.scss']
 })
 export class MissionCreateComponent implements OnInit, OnDestroy {
-  missionForm!: FormGroup;
+  missionForm: FormGroup;
   currentUser: User | null = null;
   submitting = false;
+  isLoading = false;
+  errorMessage: string | null = null;
+  showConfirmDialog = false;
+  autoSaveEnabled = true;
 
   // Dialogue de validation
   showValidationDialog = false;
@@ -40,28 +52,25 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
 
   // Listes
   vehicules: Vehicule[] = [];
-  chauffeurs: User[] = [];
+  chauffeurs: any[] = []; // Utilisation de any pour éviter les conflits de type temporairement
   selectedParticipants: Participant[] = [];
 
-  // Sauvegarde automatique
+  // Gestion des abonnements
   private destroy$ = new Subject<void>();
-  private autoSaveEnabled = true;
-
-  // Boîte de dialogue de confirmation
-  showConfirmDialog = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private missionService: MissionService,
     private router: Router
-  ) {}
+  ) {
+    this.missionForm = this.createForm();
+  }
 
   ngOnInit(): void {
-    this.currentUser = this.authService.getCurrentUser();
-    this.initForm();
-    this.loadData();
+    this.currentUser = this.authService.currentUserValue;
     this.setupAutoSave();
+    this.loadInitialData();
   }
 
   ngOnDestroy(): void {
@@ -69,64 +78,86 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Configuration de la sauvegarde automatique en brouillon
-   */
+  private createForm(): FormGroup {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return this.fb.group({
+      titre: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+      description: ['', [Validators.required, Validators.minLength(10)]],
+      dateDebut: [today.toISOString().split('T')[0], Validators.required],
+      dateFin: [tomorrow.toISOString().split('T')[0], Validators.required],
+      lieuMission: ['', [Validators.required, Validators.minLength(3)]],
+      vehiculeId: ['', Validators.required],
+      chauffeurId: ['', Validators.required],
+      budgetEstime: [null, [Validators.required, Validators.min(1)]],
+      commentaires: ['']
+    }, { validators: [this.dateValidator] });
+  }
+
   private setupAutoSave(): void {
-    // Sauvegarde automatique toutes les 5 secondes après modification
     this.missionForm.valueChanges
       .pipe(
-        debounceTime(5000), // 5 secondes d'inactivité
+        debounceTime(3000),
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        if (this.autoSaveEnabled && this.missionForm.dirty) {
+        if (this.missionForm.dirty && this.missionForm.valid) {
           this.saveDraft();
         }
       });
   }
 
-  /**
-   * Initialiser le formulaire
-   */
-  initForm(): void {
-    const today = new Date().toISOString().split('T')[0];
+  private loadInitialData(): void {
+    this.isLoading = true;
+    this.errorMessage = null;
 
-    this.missionForm = this.fb.group({
-      titre: ['', [Validators.required, Validators.minLength(3)]], // Temporairement réduit
-      description: ['', [Validators.required, Validators.minLength(5)]], // Temporairement réduit
-      dateDebut: [today, Validators.required],
-      dateFin: [today, Validators.required], // Date de fin par défaut = aujourd'hui
-      lieuMission: ['', Validators.required],
-      vehiculeId: [''],
-      chauffeurId: [''],
-      budgetEstime: [1, [Validators.required, Validators.min(1)]]
-    }, {
-      validators: [this.dateValidator]
+    // Chargement des véhicules
+    this.missionService.getAllVehicles().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (vehicules: Vehicule[]) => {
+        this.vehicules = vehicules.filter((v: Vehicule) => v.disponible);
+      },
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des véhicules:', error);
+        this.errorMessage = 'Impossible de charger la liste des véhicules.';
+      }
+    });
+
+    // Chargement des chauffeurs
+    this.missionService.getAllDrivers().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (chauffeurs: any[]) => {
+        this.chauffeurs = chauffeurs;
+      },
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des chauffeurs:', error);
+        this.errorMessage = 'Impossible de charger la liste des chauffeurs.';
+      },
+      complete: () => {
+        this.isLoading = false;
+      }
     });
   }
 
-  /**
-   * Validateur personnalisé pour les dates
-   */
   dateValidator(control: AbstractControl): ValidationErrors | null {
     const dateDebut = control.get('dateDebut')?.value;
     const dateFin = control.get('dateFin')?.value;
 
-    if (!dateDebut || !dateFin) return null; // Ne valider que si les deux dates sont présentes
+    if (!dateDebut || !dateFin) return null;
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    today.setHours(0, 0, 0, 0);
 
     const debutDate = new Date(dateDebut);
     const finDate = new Date(dateFin);
 
-    // Vérifier que la date de fin est après ou égale à la date de début
-    if (finDate < debutDate) {
-      return { dateInvalid: true };
-    }
-
-    // Permettre les dates d'aujourd'hui et futures uniquement
+    // Réinitialiser les heures pour la comparaison
+    debutDate.setHours(0, 0, 0, 0);
+    finDate.setHours(0, 0, 0, 0);
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
@@ -134,70 +165,51 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
       return { dateDebutPast: true };
     }
 
-    if (finDate < yesterday) {
-      return { dateFinPast: true };
+    if (finDate < debutDate) {
+      return { dateFinBeforeDebut: true };
     }
 
     return null;
   }
 
-  /**
-   * Chargement initial des données
-   */
-  loadData(): void {
-    // TODO: Implémenter les APIs pour charger véhicules et chauffeurs
-    // Pour l'instant, laisser vide ou utiliser des valeurs par défaut
-    this.vehicules = [];
-    this.chauffeurs = [];
+  onAddParticipant(participant: Participant): void {
+    if (!this.selectedParticipants.some(p => p.id === participant.id)) {
+      this.selectedParticipants = [...this.selectedParticipants, participant];
+    }
   }
 
-  /**
-   * Actions / helpers utilisés dans le template
-   */
+  onRemoveParticipant(participant: Participant): void {
+    this.selectedParticipants = this.selectedParticipants.filter(p => p.id !== participant.id);
+  }
+
   confirmSubmit(): void {
     if (this.missionForm.invalid) {
       this.missionForm.markAllAsTouched();
+      this.errorMessage = 'Veuillez remplir correctement tous les champs obligatoires.';
       return;
     }
 
-    // Préparer les données pour le dialogue de validation
-    const formData = this.missionForm.getRawValue();
     this.missionDataForValidation = {
-      ...formData,
+      ...this.missionForm.value,
       participants: this.selectedParticipants,
-      duree: this.calculerDuree()
+      duree: this.calculerDuree(),
+      vehicule: this.vehicules.find(v => v.id === this.missionForm.value.vehiculeId),
+      chauffeur: this.chauffeurs.find(c => c.id === this.missionForm.value.chauffeurId)
     };
 
-    // Ouvrir le dialogue de validation
     this.showValidationDialog = true;
   }
 
-  cancelSubmit(): void {
-    this.showConfirmDialog = false;
-  }
-
-  /**
-   * Gestionnaire pour la validation de la mission
-   */
   onMissionValidate(status: string): void {
-    console.log('Mission validée avec statut:', status);
+    this.showValidationDialog = false;
     this.submitMission();
   }
 
-  /**
-   * Gestionnaire pour le rejet de la mission
-   */
   onMissionReject(rejectionData: { reason: string; comment?: string }): void {
     console.log('Mission rejetée:', rejectionData);
-    alert(`Mission rejetée pour la raison suivante: ${rejectionData.reason}${rejectionData.comment ? '\nCommentaire: ' + rejectionData.comment : ''}`);
-
-    // Fermer le dialogue et retourner au formulaire
     this.showValidationDialog = false;
   }
 
-  /**
-   * Gestionnaire pour l'annulation du dialogue
-   */
   onValidationCancel(): void {
     this.showValidationDialog = false;
   }
@@ -230,23 +242,52 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
       participants: this.selectedParticipants.map(p => p.id)
     };
 
+    // Création de la mission
     this.missionService.create(missionData).subscribe({
       next: (response) => {
         console.log('Mission créée avec succès:', response);
-        this.submitting = false;
-        this.autoSaveEnabled = true;
-        // Supprimer le brouillon après création réussie
-        localStorage.removeItem('missionDraft');
-        this.router.navigate(['/missions']);
+        
+        // Soumettre la mission après création réussie
+        if (response && response.id) {
+          this.missionService.submit(response.id).subscribe({
+            next: () => {
+              console.log('Mission soumise avec succès');
+              this.finalizeMissionCreation();
+            },
+            error: (submitError) => {
+              console.error('Erreur lors de la soumission de la mission:', submitError);
+              // On continue même en cas d'erreur de soumission
+              this.finalizeMissionCreation();
+            }
+          });
+        } else {
+          // Si pas d'ID dans la réponse, on finalise sans soumettre
+          console.warn('Aucun ID de mission dans la réponse, impossible de soumettre');
+          this.finalizeMissionCreation();
+        }
       },
       error: (error) => {
         console.error('Erreur lors de la création de la mission:', error);
         this.submitting = false;
         this.autoSaveEnabled = true;
-        // TODO: Afficher un message d'erreur à l'utilisateur
+        // Afficher un message d'erreur à l'utilisateur
         alert('Erreur lors de la création de la mission. Veuillez réessayer.');
       }
     });
+  }
+
+  /**
+   * Finaliser la création de la mission
+   */
+  private finalizeMissionCreation(): void {
+    this.submitting = false;
+    this.autoSaveEnabled = true;
+    // Supprimer le brouillon après création réussie
+    localStorage.removeItem('missionDraft');
+    // Afficher un message de succès
+    alert('Mission créée et soumise avec succès !');
+    // Rediriger vers la liste des missions
+    this.router.navigate(['/missions']);
   }
 
   /**
@@ -309,7 +350,8 @@ export class MissionCreateComponent implements OnInit, OnDestroy {
       id: crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
       prenom: 'Invité',
       nom: 'Temporaire',
-      role: 'AGENT' as UserRole
+      role: 'AGENT' as UserRole,
+      email: 'invite@example.com' // Ajout de l'email manquant
     });
   }
 }
